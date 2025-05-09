@@ -1,51 +1,118 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Models\Creator;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
+    /**
+     * Show the registration form for users.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showRegistrationForm()
     {
-        // Charger votre template d'inscription ici
-        return view('register'); // Assurez-vous que le chemin correspond à l'emplacement de votre template
+        return view('auth.register'); // Créer cette vue
     }
 
+    /**
+     * Handle a registration request for users.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+        $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', new Password(8), 'confirmed'],
         ]);
-
-        if ($validator->fails()) {
-            return redirect('/register')
-                ->withErrors($validator)
-                ->withInput();
-        }
 
         $user = User::create([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user', // Rôle par défaut pour l'inscription utilisateur
         ]);
+
+        event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect('/profile'); // Rediriger après l'inscription
+        return redirect(RouteServiceProvider::HOME);
     }
 
+    /**
+     * Show the registration form for creators.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showCreatorRegistrationForm()
+    {
+        return view('auth.register_creator'); // Créer cette vue
+    }
+
+    /**
+     * Handle a registration request for creators.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function registerCreator(Request $request)
+    {
+        $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', new Password(8), 'confirmed'],
+            // Ajoutez ici des champs spécifiques à l'inscription créateur si nécessaire
+        ]);
+
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'creator', // Rôle 'creator' pour l'inscription créateur
+        ]);
+
+        Creator::create(['user_id' => $user->id]); // Création immédiate du profil de créateur
+
+        event(new Registered($user));
+
+        Auth::login($user);
+
+        return redirect()->route('creator.dashboard'); // Rediriger le créateur vers son dashboard après l'inscription
+    }
+
+    /**
+     * Show the login form.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showLoginForm()
     {
-        // Charger votre template de connexion ici
-        return view('login'); // Assurez-vous que le chemin correspond à l'emplacement de votre template
+        return view('auth.login'); // Assurez-vous d'avoir cette vue
     }
 
+    /**
+     * Handle an authentication attempt.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -53,31 +120,35 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->remember)) {
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/profile'); // Rediriger après la connexion
+            if (Auth::user()->role === 'creator') {
+                return redirect()->intended(route('creator.dashboard'));
+            }
+
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
 
         return back()->withErrors([
-            'email' => 'Les informations d\'identification fournies
-                        ne correspondent pas à nos enregistrements.',
+            'email' => 'Les informations d\'identification fournies ne correspondent pas à nos enregistrements.',
         ])->onlyInput('email');
     }
 
+    /**
+     * Log the user out of the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
     public function logout(Request $request)
     {
         Auth::logout();
 
         $request->session()->invalidate();
+
         $request->session()->regenerateToken();
 
-        return redirect('/login'); // Rediriger après la déconnexion
-    }
-
-    public function profile()
-    {
-        // Charger votre template de profil ici
-        return view('profile'); // Assurez-vous que le chemin correspond à l'emplacement de votre template
+        return redirect('/');
     }
 }
