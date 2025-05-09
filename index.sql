@@ -1,13 +1,14 @@
 CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     email_verified_at TIMESTAMP NULL,
-    password VARCHAR(255) NULL, -- Autoriser NULL pour les comptes invités initialement
+    password VARCHAR(255) NULL,
     role ENUM('user', 'creator', 'admin', 'guest') DEFAULT 'user',
+    remember_token VARCHAR(100) NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    remember_token VARCHAR(100) NULL
+    updated_at TIMESTAMP NULL
 );
 
 CREATE TABLE creators (
@@ -37,10 +38,13 @@ CREATE TABLE creator_profiles (
 
 CREATE TABLE event_types (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE, -- Ex: Session de jeu, Coaching, Q&A, Atelier
+    creator_id BIGINT UNSIGNED NULL,
+    name VARCHAR(255) NOT NULL,
     description TEXT NULL,
     created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (creator_id) REFERENCES creators(id) ON DELETE SET NULL,
+    UNIQUE KEY creator_name (creator_id, name)
 );
 
 CREATE TABLE availabilities (

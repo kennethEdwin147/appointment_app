@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('event_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relation avec l'utilisateur qui crée l'événement
-            $table->string('name');
-            $table->integer('duration'); // Durée en minutes
+            $table->foreignId('creator_id')->constrained('creators')->onDelete('cascade');
+            $table->string('name'); // Suppression de unique() car plusieurs créateurs peuvent avoir le même nom de type
             $table->text('description')->nullable();
-            $table->string('slug')->unique(); // Lien unique pour l'événement
             $table->timestamps();
+            $table->unique(['creator_id', 'name']); // Un créateur ne peut pas avoir deux types d'événements avec le même nom
         });
     }
 

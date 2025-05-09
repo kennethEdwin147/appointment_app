@@ -1,26 +1,29 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Availability extends Model
+class Reservation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'creator_id',
         'event_type_id',
-        'day_of_week',
-        'start_time',
-        'end_time',
-        'start_date',
-        'end_date',
-        'is_recurring',
-        'price',
-        'max_participants',
-        'meeting_link',
+        'guest_first_name',
+        'guest_last_name',
+        'reserved_datetime',
+        'payment_status',
+        'payment_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function creator()
     {
@@ -30,5 +33,10 @@ class Availability extends Model
     public function eventType()
     {
         return $this->belongsTo(EventType::class);
+    }
+
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
     }
 }
