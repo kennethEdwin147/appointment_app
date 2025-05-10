@@ -15,7 +15,7 @@ class EventTypePolicy
      */
     public function viewAny(User $user): bool
     {
-        return true; // Tous les utilisateurs connectés peuvent voir la liste
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class EventTypePolicy
      */
     public function view(User $user, EventType $eventType): bool
     {
-        return true; // Tous les utilisateurs connectés peuvent voir un type d'événement spécifique
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class EventTypePolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'creator' || $user->role === 'admin';
+        return $user->role === 'creator';
     }
 
     /**
@@ -39,7 +39,9 @@ class EventTypePolicy
      */
     public function update(User $user, EventType $eventType): bool
     {
-        return $user->id === $eventType->creator_id || $user->role === 'admin';
+        // Récupérer l'ID du créateur associé à l'utilisateur connecté
+        $creatorId = $user->creator ? $user->creator->id : null;
+        return $user->role === 'creator' && $creatorId === $eventType->creator_id;
     }
 
     /**
@@ -47,7 +49,9 @@ class EventTypePolicy
      */
     public function delete(User $user, EventType $eventType): bool
     {
-        return $user->id === $eventType->creator_id || $user->role === 'admin';
+        // Récupérer l'ID du créateur associé à l'utilisateur connecté
+        $creatorId = $user->creator ? $user->creator->id : null;
+        return $user->role === 'creator' && $creatorId === $eventType->creator_id;
     }
 
     /**
@@ -55,7 +59,7 @@ class EventTypePolicy
      */
     public function restore(User $user, EventType $eventType): bool
     {
-        return $user->role === 'admin';
+        return false;
     }
 
     /**
@@ -63,6 +67,6 @@ class EventTypePolicy
      */
     public function forceDelete(User $user, EventType $eventType): bool
     {
-        return $user->role === 'admin';
+        return false;
     }
 }

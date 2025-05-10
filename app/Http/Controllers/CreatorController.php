@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Creator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CreatorController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Affiche le tableau de bord du créateur.
      *
@@ -15,13 +18,28 @@ class CreatorController extends Controller
      */
     public function dashboard()
     {
-        $this->authorize('dashboard', Creator::class); // Vérifie l'autorisation d'accéder au tableau de bord
+        $this->authorize('dashboard', Creator::class);
 
         $creator = Auth::user()->creator;
         $availabilities = $creator ? $creator->availabilities()->latest()->take(5)->get() : [];
         $reservations = $creator ? $creator->reservations()->latest()->take(5)->get() : [];
 
         return view('creator.dashboard', compact('availabilities', 'reservations'));
+    }
+
+    /**
+     * Affiche le profil privé du créateur.
+     *
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse
+     */
+    public function profile()
+    {
+        $creator = Auth::user()->creator;
+        if (!$creator) {
+            return redirect()->route('creator.dashboard')->with('warning', 'Votre profil de créateur n\'est pas encore configuré.');
+        }
+        $this->authorize('view', $creator);
+        return view('creator.profile', compact('creator'));
     }
 
     /**
@@ -35,8 +53,8 @@ class CreatorController extends Controller
         if (!$creator) {
             return redirect()->route('creator.dashboard')->with('warning', 'Votre profil de créateur n\'est pas encore configuré.');
         }
-        $this->authorize('update', $creator); // Vérifie l'autorisation de modifier son profil privé
-        return view('creator.edit_profile', compact('creator'));
+        $this->authorize('update', $creator);
+        return view('creator.profile_edit', compact('creator')); // Utilisation de profile_edit
     }
 
     /**
@@ -51,7 +69,7 @@ class CreatorController extends Controller
         if (!$creator) {
             return redirect()->route('creator.dashboard')->with('warning', 'Votre profil de créateur n\'est pas encore configuré.');
         }
-        $this->authorize('update', $creator); // Vérifie l'autorisation de mettre à jour son profil privé
+        $this->authorize('update', $creator);
 
         $request->validate([
             'bio' => ['nullable', 'string'],
@@ -63,6 +81,6 @@ class CreatorController extends Controller
 
         $creator->update($request->only(['bio', 'platform_name', 'platform_url', 'type', 'platform_commission_rate']));
 
-        return redirect()->route('creator.dashboard')->with('success', 'Votre profil a été mis à jour.');
+        return redirect()->route('creator.profile')->with('success', 'Votre profil a été mis à jour.');
     }
 }

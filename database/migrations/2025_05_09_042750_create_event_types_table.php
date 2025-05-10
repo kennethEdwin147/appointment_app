@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('event_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('creator_id')->constrained('creators')->onDelete('cascade');
-            $table->string('name'); // Suppression de unique() car plusieurs créateurs peuvent avoir le même nom de type
+            $table->string('name')->unique();
             $table->text('description')->nullable();
+            $table->string('platform')->nullable();
+            $table->string('game')->nullable();
+            $table->foreignId('creator_id')->constrained()->onDelete('cascade'); // Relation avec l'utilisateur créateur
             $table->timestamps();
-            $table->unique(['creator_id', 'name']); // Un créateur ne peut pas avoir deux types d'événements avec le même nom
         });
     }
 

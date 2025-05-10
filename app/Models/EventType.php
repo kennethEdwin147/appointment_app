@@ -9,9 +9,11 @@ class EventType extends Model
     use HasFactory;
 
     protected $fillable = [
-        'creator_id',
         'name',
         'description',
+        'platform',
+        'game',
+        'creator_id',
     ];
 
     public function creator()
