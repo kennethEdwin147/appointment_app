@@ -1,71 +1,70 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>{{ config('app.name', 'Laravel') }} - Se connecter</title>
-
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    {{-- <link rel="stylesheet" href="{{ asset('css/style.css') }}"> --}}
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+    <link rel="stylesheet" href="{{ asset('login_theme/css/bootstrap/bootstrap.min.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="">
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">{{ __('Se connecter') }}</div>
-
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
-
-                            <div class="mb-3">
-                                <label for="email" class="form-label">{{ __('Adresse e-mail') }}</label>
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+    <div class="">
+        <section class="py-12 py-lg-16 overflow-hidden bg-secondary">
+            <div class="container mw-2xl mw-lg-7xl">
+                <div class="bg-white rounded-5 overflow-hidden">
+                    <div class="row">
+                        <div class="col-12 col-lg-6 p-0">
+                            <div class="d-flex align-items-center justify-content-center h-100 p-12 rounded-4 bg-primary-dark">
+                                <div class="mw-sm py-12 px-10 bg-white rounded-4">
+                                    <img class="d-block mb-3 img-fluid" src="{{ asset('login_theme/images/mirga-dark-logo.svg') }}" alt="">
+                                    <p class="fw-medium text-muted mb-6">{{ __('Connecte-toi et gère tes événements facilement !') }}</p>
+                                    <img class="d-block mx-auto img-fluid" src="{{ asset('login_theme/images/pexels-107014568-9725465.jpg') }}" alt="">
+                                </div>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label">{{ __('Mot de passe') }}</label>
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                        </div>
+                        <div class="col-12 col-lg-6 pt-16 px-8 px-sm-16 pb-20">
+                            <div>
+                                <span class="d-block fs-6 fw-semibold mb-4">{{ __('Connexion') }}</span>
+                                <h3 class="fs-1 mb-6">{{ __('Accède à mon espace personnel') }}</h3>
+                                <p class="lead fs-8 mb-16">
+                                    {{ __('Votre plateforme pour des événements réussis.') }}
+                                    <br>
+                                </p>
+                                <form method="POST" action="{{ route('login') }}">
+                                    @csrf
+                                    <div class="mb-6">
+                                        <label for="email" class="form-label fw-medium text-muted">{{ __('E-mail de connexion') }}</label>
+                                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" placeholder="ex. d.duncan@email.com" required autocomplete="email" autofocus>
+                                        @error('email')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-6">
+                                        <label for="password" class="form-label fw-medium text-muted">{{ __('Votre mot de passe') }}</label>
+                                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" placeholder="••••••••" required autocomplete="current-password">
+                                        @error('password')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <button class="btn btn-lg py-4 mb-6 btn-primary w-100" type="submit">{{ __('C\'est parti !') }}</button>
+                                    <p class="d-flex align-items-center text-muted fs-9 fw-medium mb-0">
+                                        <span class="me-1">{{ __('Tu n\'as pas de compte ?') }}</span>
+                                        <a class="btn text-muted border-0 p-0" href="#">{{ __('Inscris toi') }}</a>
+                                    </p>
+                                </form>
                             </div>
-
-                            <div class="mb-3 form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="remember">
-                                    {{ __('Se souvenir de moi') }}
-                                </label>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Se connecter') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Mot de passe oublié ?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-    <script src="{{ asset('js/app.js') }}"></script>
-    {{-- <script src="{{ asset('js/script.js') }}"></script> --}}
+    <script src="{{ asset('js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
 </body>
 </html>

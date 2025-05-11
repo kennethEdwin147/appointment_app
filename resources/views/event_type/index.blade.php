@@ -19,7 +19,10 @@
                     <li><a href="{{ route('creator.dashboard') }}">Tableau de bord</a></li>
                     <li><a href="{{ route('event_type.index') }}">Types d'événements</a></li>
                     <li>
-                        <li><a href="{{ route('logout') }}">Se déconnecter</a></li>
+                        <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="btn btn-link">Déconnexion</button>
+</form>
                     </li>
                 </ul>
             </nav>

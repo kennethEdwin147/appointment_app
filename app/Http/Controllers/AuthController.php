@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Creator;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +50,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect('/home'); // Redirection mise à jour pour Laravel 12
     }
 
     /**
@@ -94,7 +93,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('creator.dashboard'); // Rediriger le créateur vers son dashboard après l'inscription
+        return redirect()->route('creator.dashboard'); // Redirection vers la route nommée
     }
 
     /**
@@ -127,7 +126,7 @@ class AuthController extends Controller
                 return redirect()->intended(route('creator.dashboard'));
             }
 
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->intended('/home'); // Redirection mise à jour pour Laravel 12
         }
 
         return back()->withErrors([
