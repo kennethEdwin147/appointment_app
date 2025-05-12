@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Enums\MeetingPlatform;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,8 +15,8 @@ class EventType extends Model
         'default_duration',
         'default_price',
         'default_max_participants',
-        'location_type',
         'meeting_platform',
+        'meeting_link',
         'is_active',
         'creator_id',
     ];
@@ -24,6 +25,7 @@ class EventType extends Model
         'default_duration' => 'integer',
         'default_price' => 'decimal:2',
         'default_max_participants' => 'integer',
+        'meeting_platform' => MeetingPlatform::class,
         'is_active' => 'boolean',
     ];
 

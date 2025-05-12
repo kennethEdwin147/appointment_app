@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
     <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="container mw-2xl mw-lg-7xl py-5">
@@ -23,9 +24,11 @@
                     <thead class="table-light">
                         <tr>
                             <th>Nom</th>
+                            <th>Durée</th>
+                            <th>Prix</th>
                             <th>Plateforme</th>
-                            <th>Jeu</th>
-                            <th></th>
+                            <th>Statut</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>

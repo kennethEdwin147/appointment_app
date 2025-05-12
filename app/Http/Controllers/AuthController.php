@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Timezone;
 use App\Models\Creator;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rules\Enum;
 
 class AuthController extends Controller
 {
@@ -76,7 +78,7 @@ class AuthController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', new Password(8), 'confirmed'],
-            // Ajoutez ici des champs spécifiques à l'inscription créateur si nécessaire
+            'timezone' => ['required', new Enum(Timezone::class)],
         ]);
 
         $user = User::create([
@@ -87,7 +89,10 @@ class AuthController extends Controller
             'role' => 'creator', // Rôle 'creator' pour l'inscription créateur
         ]);
 
-        Creator::create(['user_id' => $user->id]); // Création immédiate du profil de créateur
+        Creator::create([
+            'user_id' => $user->id,
+            'timezone' => $request->timezone
+        ]); // Création immédiate du profil de créateur
 
         event(new Registered($user));
 

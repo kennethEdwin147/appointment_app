@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Auth;
 
+use App\Enums\Timezone;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -138,6 +139,7 @@ class AuthControllerTest extends TestCase
             'email' => 'creator@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'timezone' => Timezone::PARIS->value,
         ]);
 
         $this->assertAuthenticated();
@@ -148,6 +150,7 @@ class AuthControllerTest extends TestCase
         ]);
         $this->assertDatabaseHas('creators', [
             'user_id' => User::where('email', 'creator@example.com')->first()->id,
+            'timezone' => Timezone::PARIS->value,
         ]);
     }
 
@@ -155,9 +158,26 @@ class AuthControllerTest extends TestCase
     {
         $response = $this->post('/register/creator', []);
 
-        $response->assertSessionHasErrors(['first_name', 'last_name', 'email', 'password']);
+        $response->assertSessionHasErrors(['first_name', 'last_name', 'email', 'password', 'timezone']);
         $this->assertGuest();
         $this->assertDatabaseMissing('users', []);
         $this->assertDatabaseMissing('creators', ['user_id' => null]);
+    }
+
+    public function test_creators_cannot_register_with_invalid_timezone()
+    {
+        $response = $this->post('/register/creator', [
+            'first_name' => 'Creator',
+            'last_name' => 'Test',
+            'email' => 'creator@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'timezone' => 'Invalid/Timezone', // Valeur qui n'existe pas dans l'enum
+        ]);
+
+        $response->assertSessionHasErrors('timezone');
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'creator@example.com']);
+        $this->assertDatabaseMissing('creators', []);
     }
 }

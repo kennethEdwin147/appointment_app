@@ -13,7 +13,12 @@
 <body>
     <div class="container">
         <header>
-            <h1>Modifier la Disponibilité</h1>
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Modifier la Disponibilité</h1>
+                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#timezoneHelpModal">
+                    <i class="fas fa-clock"></i> Aide fuseaux horaires
+                </button>
+            </div>
             <nav>
                 <ul>
                     <li><a href="{{ route('availability.index') }}">Mes Disponibilités</a></li>
@@ -117,6 +122,44 @@
         </footer>
     </div>
     <script src="{{ asset('js/app.js') }}"></script>
-    {{-- <script src="{{ asset('js/script.js') }}"></script> --}}
+    <script src="{{ asset('js/timezone-helper.js') }}"></script>
+
+    <!-- Afficher les avertissements de changement d'heure s'il y en a -->
+    @if (session('dst_warnings'))
+        <div class="alert alert-warning">
+            <strong>Attention aux changements d'heure :</strong>
+            <ul>
+                @foreach (session('dst_warnings') as $warning)
+                    <li>{{ $warning }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- Afficher un avertissement si cette disponibilité est affectée par un changement d'heure -->
+    @if (isset($availability->dst_warning))
+        <div class="alert alert-info">
+            <strong>Information :</strong> {{ $availability->dst_warning }}
+        </div>
+    @endif
+
+    <!-- Modal d'aide sur les fuseaux horaires -->
+    <div class="modal fade" id="timezoneHelpModal" tabindex="-1" aria-labelledby="timezoneHelpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timezoneHelpModalLabel">Aide sur les fuseaux horaires</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    @include('partials.timezone-help')
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <a href="{{ route('documentation.timezone') }}" target="_blank" class="btn btn-primary">Documentation complète</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

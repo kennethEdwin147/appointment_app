@@ -18,8 +18,8 @@ return new class extends Migration
             $table->integer('default_duration')->default(60)->comment('Duration in minutes');
             $table->decimal('default_price', 10, 2)->nullable();
             $table->integer('default_max_participants')->nullable();
-            $table->string('location_type')->default('online')->comment('online, in_person, hybrid');
-            $table->string('meeting_platform')->nullable()->comment('zoom, teams, discord, etc');
+            $table->string('meeting_platform')->default('zoom')->comment('Plateforme de réunion (zoom, teams, google_meet, etc.)');
+            $table->string('meeting_link')->nullable()->comment('Lien de réunion personnalisé');
             $table->boolean('is_active')->default(true);
             $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();

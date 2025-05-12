@@ -10,4 +10,7 @@ Route::middleware(['auth', 'can:manageAvailabilities,App\Models\Availability'])-
     Route::get('/{availability}/edit', [AvailabilityController::class, 'edit'])->name('edit');
     Route::put('/{availability}', [AvailabilityController::class, 'update'])->name('update');
     Route::delete('/{availability}', [AvailabilityController::class, 'destroy'])->name('destroy');
+
+    // Route API pour récupérer les changements d'heure à venir
+    Route::get('/api/dst-transitions', [AvailabilityController::class, 'getUpcomingDSTTransitions'])->name('api.dst-transitions');
 });

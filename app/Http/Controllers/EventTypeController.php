@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MeetingPlatform;
 use App\Models\EventType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rules\Enum;
 
 class EventTypeController extends Controller
 {
@@ -36,7 +38,7 @@ class EventTypeController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', EventType::class);
-        
+
         // Validation des champs du formulaire
         $request->validate([
             'name' => 'required|string|max:255',
@@ -44,8 +46,8 @@ class EventTypeController extends Controller
             'default_duration' => 'required|integer|min:1|max:1440',
             'default_price' => 'nullable|numeric|min:0',
             'default_max_participants' => 'nullable|integer|min:1',
-            'location_type' => 'required|in:online,in_person,hybrid',
-            'meeting_platform' => 'nullable|string|max:255|required_if:location_type,online,hybrid',
+            'meeting_platform' => ['required', new Enum(MeetingPlatform::class)],
+            'meeting_link' => 'nullable|url|required_if:meeting_platform,custom',
         ]);
 
         // Création du type d'événement
@@ -93,8 +95,8 @@ class EventTypeController extends Controller
             'default_duration' => 'required|integer|min:1|max:1440',
             'default_price' => 'nullable|numeric|min:0',
             'default_max_participants' => 'nullable|integer|min:1',
-            'location_type' => 'required|in:online,in_person,hybrid',
-            'meeting_platform' => 'nullable|string|max:255|required_if:location_type,online,hybrid',
+            'meeting_platform' => ['required', new Enum(MeetingPlatform::class)],
+            'meeting_link' => 'nullable|url|required_if:meeting_platform,custom',
             'is_active' => 'boolean',
         ]);
 

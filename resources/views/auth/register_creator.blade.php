@@ -73,6 +73,24 @@
                                         <label for="confirmpassword" class="form-label fw-medium text-muted">{{ __('Confirmer le mot de passe') }}</label>
                                         <input id="confirmpassword" type="password" class="form-control" name="password_confirmation" placeholder="••••••••" required autocomplete="new-password">
                                     </div>
+                                    <div class="mb-6">
+                                        <label for="timezone" class="form-label fw-medium text-muted">{{ __('Fuseau horaire') }}</label>
+                                        <select id="timezone" class="form-select @error('timezone') is-invalid @enderror" name="timezone" required>
+                                            <option value="" disabled {{ old('timezone') ? '' : 'selected' }}>Sélectionnez votre fuseau horaire</option>
+                                            @foreach(\App\Enums\Timezone::getTimezonesByRegion() as $region => $timezones)
+                                                <optgroup label="{{ $region }}">
+                                                    @foreach($timezones as $value => $label)
+                                                        <option value="{{ $value }}" {{ old('timezone') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                        @error('timezone')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
                                     <button class="btn btn-lg py-4 mb-6 btn-primary w-100" type="submit">{{ __('C\'est parti !') }}</button>
                                     <p class="d-flex align-items-center text-muted fs-9 fw-medium mb-0">
                                         <span class="me-1">Tu as dejà un compte ?</span>

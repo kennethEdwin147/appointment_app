@@ -53,7 +53,7 @@
                     </thead>
                     <tbody>
                         @foreach ($availabilities as $availability)
-                            <tr>
+                            <tr class="{{ isset($availability->dst_warning) ? 'table-warning' : '' }}">
                                 <td>{{ $availability->eventType->name }}</td>
                                 <td>{{ ucfirst($availability->day_of_week) }}</td>
                                 <td>{{ $availability->start_time->format('H:i') }}</td>
@@ -70,6 +70,11 @@
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')">Supprimer</button>
                                     </form>
+                                    @if (isset($availability->dst_warning))
+                                        <div class="small text-warning mt-1">
+                                            <i class="fas fa-exclamation-triangle"></i> Changement d'heure
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -83,6 +88,18 @@
         </footer>
     </div>
     <script src="{{ asset('js/app.js') }}"></script>
-    {{-- <script src="{{ asset('js/script.js') }}"></script> --}}
+    <script src="{{ asset('js/timezone-helper.js') }}"></script>
+
+    <!-- Afficher les avertissements de changement d'heure s'il y en a -->
+    @if (session('dst_warnings'))
+        <div class="alert alert-warning">
+            <strong>Attention aux changements d'heure :</strong>
+            <ul>
+                @foreach (session('dst_warnings') as $warning)
+                    <li>{{ $warning }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 </body>
 </html>
