@@ -1,74 +1,57 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="fr">
 <head>
+    <title>Mes types d'événements</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{{ config('app.name', 'Laravel') }} - Types d'événements</title>
-
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    {{-- <link rel="stylesheet" href="{{ asset('css/style.css') }}"> --}}
-
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+    <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap/bootstrap.min.css') }}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Types d'événements</h1>
-            <nav>
-                <ul>
-                    <li><a href="{{ route('creator.dashboard') }}">Tableau de bord</a></li>
-                    <li><a href="{{ route('event_type.index') }}">Types d'événements</a></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit" class="btn btn-link">Déconnexion</button>
-</form>
-                    </li>
-                </ul>
-            </nav>
-        </header>
-
-        <main>
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+<div class="container mw-2xl mw-lg-7xl py-5">
+    <div class="bg-white rounded-5 overflow-hidden shadow">
+        <div class="p-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fs-2 mb-0">Mes types d'événements</h3>
+                <a href="{{ route('event_type.create') }}" class="btn btn-primary btn-sm">+ Ajouter</a>
+            </div>
+            @if(session('success'))
+                <div class="alert alert-success py-2">{{ session('success') }}</div>
             @endif
-
-            <p><a href="{{ route('event_type.create') }}" class="btn btn-primary">Ajouter un type d'événement</a></p>
-
-            @if ($eventTypes->isEmpty())
-                <p>Aucun type d'événement n'a été créé.</p>
-            @else
-                <table class="table">
-                    <thead>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>Nom</th>
-                            <th>Actions</th>
+                            <th>Plateforme</th>
+                            <th>Jeu</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($eventTypes as $eventType)
+                        @forelse($eventTypes as $eventType)
                             <tr>
                                 <td>{{ $eventType->name }}</td>
+                                <td>{{ $eventType->platform }}</td>
+                                <td>{{ $eventType->game }}</td>
                                 <td>
-                                    <a href="{{ route('event_type.edit', $eventType->id) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                    <form action="{{ route('event_type.destroy', $eventType->id) }}" method="POST" style="display: inline;">
+                                    <a href="{{ route('event_type.edit', $eventType) }}" class="btn btn-outline-primary btn-sm me-2">Modifier</a>
+                                    <form action="{{ route('event_type.destroy', $eventType) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type d\'événement ?')">Supprimer</button>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ce type ?')">Supprimer</button>
                                     </form>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="4" class="text-center text-secondary">Aucun type d'événement</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
-            @endif
-        </main>
-
-        <footer>
-            <p>&copy; {{ date('Y') }} Mon Application de Réservation</p>
-        </footer>
+            </div>
+        </div>
     </div>
-    <script src="{{ asset('js/app.js') }}"></script>
-    {{-- <script src="{{ asset('js/script.js') }}"></script> --}}
+</div>
+<script src="{{ asset('register_theme/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

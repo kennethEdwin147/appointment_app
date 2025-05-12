@@ -36,27 +36,31 @@ class EventTypeController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', EventType::class);
+        
+        // Validation des champs du formulaire
         $request->validate([
-            'name' => 'required|string|unique:event_types|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'platform' => 'nullable|string|max:255',
-            'game' => 'nullable|string|max:255',
+            'default_duration' => 'required|integer|min:1|max:1440',
+            'default_price' => 'nullable|numeric|min:0',
+            'default_max_participants' => 'nullable|integer|min:1',
+            'location_type' => 'required|in:online,in_person,hybrid',
+            'meeting_platform' => 'nullable|string|max:255|required_if:location_type,online,hybrid',
         ]);
 
-        // Récupérer l'ID du créateur associé à l'utilisateur connecté
-        $creator = auth()->user()->creator;
+        // Création du type d'événement
+        // Le spread operator (...) en PHP décompresse le tableau retourné par validated()
+        // Exemple: si validated() retourne ['name' => 'Event', 'description' => 'Test']
+        // Le spread va "étaler" ces valeurs dans le tableau de création
+        $eventType = EventType::create([
+            ...$request->validated(),  // Spread operator PHP pour inclure tous les champs validés
+            'creator_id' => auth()->id(),  // Ajout de l'ID de l'utilisateur connecté
+            'is_active' => true,  // Le type d'événement est actif par défaut
+        ]);
 
-        if ($creator) {
-            $request->merge(['creator_id' => $creator->id]);
-            EventType::create($request->all());
-
-            return redirect()->route('event_type.index')->with('success', 'Type d\'événement créé avec succès.');
-        } else {
-            // Gérer le cas où l'utilisateur n'a pas de profil créateur associé
-            return redirect()->back()->withErrors(['message' => 'Votre compte n\'est pas associé à un profil de créateur.']);
-        }
+        return redirect()->route('event-types.index')
+            ->with('success', 'Type d\'événement créé avec succès.');
     }
-        
 
     /**
      * Display the specified resource.
@@ -82,17 +86,22 @@ class EventTypeController extends Controller
     public function update(Request $request, EventType $eventType)
     {
         $this->authorize('update', $eventType);
+
         $request->validate([
-            'name' => 'required|string|unique:event_types,name,' . $eventType->id . '|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'platform' => 'nullable|string|max:255',
-            'game' => 'nullable|string|max:255',
-            // 'requires_subscription' => 'nullable|boolean', // Si tu avais gardé ce champ
+            'default_duration' => 'required|integer|min:1|max:1440',
+            'default_price' => 'nullable|numeric|min:0',
+            'default_max_participants' => 'nullable|integer|min:1',
+            'location_type' => 'required|in:online,in_person,hybrid',
+            'meeting_platform' => 'nullable|string|max:255|required_if:location_type,online,hybrid',
+            'is_active' => 'boolean',
         ]);
 
-        $eventType->update($request->all());
+        $eventType->update($request->validated());
 
-        return redirect()->route('event_type.index')->with('success', 'Type d\'événement mis à jour avec succès.');
+        return redirect()->route('event-types.index')
+            ->with('success', 'Type d\'événement mis à jour avec succès.');
     }
 
     /**

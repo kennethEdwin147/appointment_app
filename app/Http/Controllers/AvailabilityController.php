@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Availability;
 use App\Models\EventType;
+use App\Traits\HandlesTimezones;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AvailabilityController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, HandlesTimezones;
 
     /**
      * Display a listing of the availabilities for the logged-in creator.
@@ -18,8 +19,22 @@ class AvailabilityController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Availability::class);
-        $creatorId = auth()->user()->creator->id;
-        $availabilities = Availability::where('creator_id', $creatorId)->get();
+        
+        $creator = auth()->user()->creator;
+        $creatorTimezone = $creator->timezone;
+        
+        $availabilities = Availability::with('eventType')
+            ->where('creator_id', auth()->id())
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get()
+            ->map(function ($availability) use ($creatorTimezone) {
+                // Convertir les heures UTC vers le fuseau horaire du créateur pour l'affichage
+                $availability->start_time = $this->convertFromUTC($availability->start_time, $creatorTimezone);
+                $availability->end_time = $this->convertFromUTC($availability->end_time, $creatorTimezone);
+                return $availability;
+            });
+
         return view('availability.index', compact('availabilities'));
     }
 
@@ -29,8 +44,11 @@ class AvailabilityController extends Controller
     public function create()
     {
         $this->authorize('create', Availability::class);
-        $creatorId = auth()->user()->creator->id;
-        $eventTypes = EventType::where('creator_id', $creatorId)->get();
+        
+        $eventTypes = EventType::where('creator_id', auth()->id())
+            ->where('is_active', true)
+            ->get();
+
         return view('availability.create', compact('eventTypes'));
     }
 
@@ -40,23 +58,45 @@ class AvailabilityController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Availability::class);
+
         $request->validate([
-            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->user()->creator->id,
+            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->id(),
             'day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'start_time' => 'required|date_format:H:i',
-            'duration' => 'required|integer|min:1',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_recurring' => 'required|boolean',
-            'price' => 'nullable|numeric|min:0',
-            'max_participants' => 'nullable|integer|min:1',
-            'meeting_link' => 'nullable|url|max:255',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'effective_from' => 'nullable|date',
+            'effective_until' => 'nullable|date|after:effective_from',
         ]);
 
-        $request->merge(['creator_id' => auth()->user()->creator->id]);
-        Availability::create($request->all());
+        // Récupérer le fuseau horaire du créateur
+        $creator = auth()->user()->creator;
+        $creatorTimezone = $creator->timezone;
 
-        return redirect()->route('availability.index')->with('success', 'Disponibilité ajoutée avec succès.');
+        // Convertir les heures du fuseau horaire du créateur vers UTC pour le stockage
+        $startTimeUTC = $this->convertToUTC($request->start_time, $creatorTimezone);
+        $endTimeUTC = $this->convertToUTC($request->end_time, $creatorTimezone);
+
+        // Vérifier que les heures sont valides (pas dans une période de changement d'heure)
+        if (!$this->isValidTime($request->start_time, $creatorTimezone) || 
+            !$this->isValidTime($request->end_time, $creatorTimezone)) {
+            return back()->withErrors([
+                'time' => 'L\'heure sélectionnée tombe pendant une période de changement d\'heure.'
+            ]);
+        }
+
+        $availability = Availability::create([
+            'event_type_id' => $request->event_type_id,
+            'creator_id' => auth()->id(),
+            'day_of_week' => $request->day_of_week,
+            'start_time' => $startTimeUTC,
+            'end_time' => $endTimeUTC,
+            'effective_from' => $request->effective_from,
+            'effective_until' => $request->effective_until,
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('availabilities.index')
+            ->with('success', 'Disponibilité créée avec succès.');
     }
 
     /**
@@ -76,22 +116,21 @@ class AvailabilityController extends Controller
     public function update(Request $request, Availability $availability)
     {
         $this->authorize('update', $availability);
+
         $request->validate([
-            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->user()->creator->id,
+            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->id(),
             'day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'start_time' => 'required|date_format:H:i',
-            'duration' => 'required|integer|min:1',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_recurring' => 'required|boolean',
-            'price' => 'nullable|numeric|min:0',
-            'max_participants' => 'nullable|integer|min:1',
-            'meeting_link' => 'nullable|url|max:255',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'effective_from' => 'nullable|date',
+            'effective_until' => 'nullable|date|after:effective_from',
+            'is_active' => 'boolean',
         ]);
 
-        $availability->update($request->all());
+        $availability->update($request->validated());
 
-        return redirect()->route('availability.index')->with('success', 'Disponibilité mise à jour avec succès.');
+        return redirect()->route('availabilities.index')
+            ->with('success', 'Disponibilité mise à jour avec succès.');
     }
 
     /**

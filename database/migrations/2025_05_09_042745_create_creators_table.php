@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('platform_name')->nullable();
             $table->string('platform_url')->nullable();
             $table->string('type')->nullable();
+            $table->string('timezone')->default('UTC');  // Fuseau horaire du créateur
             $table->decimal('platform_commission_rate', 5, 2)->default(0.05)->comment('Taux de commission de la plateforme pour ce créateur (par défaut 5%)');
             $table->timestamps();
         });

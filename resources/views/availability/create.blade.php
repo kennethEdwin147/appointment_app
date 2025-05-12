@@ -1,121 +1,199 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="fr">
 <head>
+    <title>Configurer mes disponibilités</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{{ config('app.name', 'Laravel') }} - Ajouter une Disponibilité</title>
-
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    {{-- <link rel="stylesheet" href="{{ asset('css/style.css') }}"> --}}
-
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+    <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap/bootstrap.min.css') }}">
+    <style>
+        body { background: #f5f6fa; color: #222; font-family: 'DM Sans', sans-serif; }
+        .avail-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            max-width: 500px;
+            margin: 2rem auto;
+            box-shadow: 0 2px 12px #0001;
+        }
+        .avail-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.2rem; }
+        .day-row {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            padding: 0.4rem 0.7rem;
+            font-size: 0.98rem;
+            border: 1px solid #e3e6ed;
+        }
+        .day-row input[type="checkbox"] { accent-color: #0d6efd; margin-right: 0.7rem; }
+        .day-label { width: 38px; }
+        .time-input {
+            width: 100px;
+            background: #fff;
+            color: #222;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            padding: 2px 6px;
+        }
+        .add-slot-btn {
+            background: none;
+            border: none;
+            color: #0d6efd;
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+            padding: 0 0.2rem;
+            cursor: pointer;
+        }
+        .remove-slot-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 1.1rem;
+            margin-left: 0.3rem;
+            cursor: pointer;
+        }
+        .remove-slot-btn:hover { color: #fff; background: #dc3545; border-radius: 50%; }
+        .save-btn {
+            width: 100%;
+            border-radius: 2rem;
+            font-size: 1.08rem;
+            background: #0d6efd;
+            border: none;
+            color: #fff;
+            margin-top: 1.2rem;
+            font-weight: 600;
+            padding: 0.7rem 0;
+        }
+        .slots { flex-grow: 1; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .mx-1 { margin-left: 0.18rem !important; margin-right: 0.18rem !important; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Ajouter une Disponibilité</h1>
-            <nav>
-                <ul>
-                    <li><a href="{{ route('availability.index') }}">Mes Disponibilités</a></li>
-                    <li><a href="{{ route('creator.dashboard') }}">Tableau de bord</a></li>
-                    <li>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit">Se déconnecter</button>
-                        </form>
-                    </li>
-                </ul>
-            </nav>
-        </header>
+<div class="avail-box">
+    <div class="avail-title mb-3">Configurer vos disponibilités</div>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    <form id="availabilityForm" method="POST" action="{{ route('availability.store') }}" autocomplete="off">
+        @csrf
+        <input type="hidden" name="availability_type" value="repeating">
+        <div class="mb-3">
+            <label class="form-label fw-medium text-muted" for="event_type_id">Type d'événement</label>
+            <select class="form-control @error('event_type_id') is-invalid @enderror" name="event_type_id" id="event_type_id" required>
+                <option value="">Sélectionnez un type d'événement</option>
+                @foreach($eventTypes as $eventType)
+                    <option value="{{ $eventType->id }}">{{ $eventType->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4 mb-2">
+                <label class="form-label fw-medium text-muted" for="duration">Durée (min)</label>
+                <input type="number" class="form-control" name="duration" id="duration" min="1" required>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label class="form-label fw-medium text-muted" for="price">Prix (€)</label>
+                <input type="number" class="form-control" name="price" id="price" step="0.01" min="0">
+            </div>
+            <div class="col-md-4 mb-2">
+                <label class="form-label fw-medium text-muted" for="max_participants">Max participants</label>
+                <input type="number" class="form-control" name="max_participants" id="max_participants" min="1">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6 mb-2">
+                <label class="form-label fw-medium text-muted" for="start_date">Date de début</label>
+                <input type="date" class="form-control" name="start_date" id="start_date">
+            </div>
+            <div class="col-md-6 mb-2">
+                <label class="form-label fw-medium text-muted" for="end_date">Date de fin</label>
+                <input type="date" class="form-control" name="end_date" id="end_date">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium text-muted" for="meeting_link">Lien de la réunion</label>
+            <input type="url" class="form-control" name="meeting_link" id="meeting_link">
+        </div>
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" value="1" id="is_recurring" name="is_recurring" checked>
+            <label class="form-check-label" for="is_recurring">Disponibilité récurrente</label>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-medium text-muted">Sélectionnez vos jours et horaires disponibles</label>
+            <div id="daysContainer"></div>
+        </div>
+        <button type="submit" class="btn save-btn">Enregistrer les disponibilités</button>
+    </form>
+</div>
+<script>
+const days = [
+    { key: 'monday', label: 'Mon' },
+    { key: 'tuesday', label: 'Tue' },
+    { key: 'wednesday', label: 'Wed' },
+    { key: 'thursday', label: 'Thu' },
+    { key: 'friday', label: 'Fri' },
+    { key: 'saturday', label: 'Sat' },
+    { key: 'sunday', label: 'Sun' }
+];
 
-        <main>
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+const daysContainer = document.getElementById('daysContainer');
 
-            <form action="{{ route('availability.store') }}" method="POST">
-                @csrf
+days.forEach(day => {
+    const row = document.createElement('div');
+    row.className = 'day-row';
+    row.dataset.day = day.key;
+    row.innerHTML = `
+        <input type="checkbox" class="form-check-input day-checkbox" id="day_${day.key}" name="days[]" value="${day.key}">
+        <label class="day-label" for="day_${day.key}">${day.label}</label>
+        <div class="slots"></div>
+        <button type="button" class="add-slot-btn" style="display:none;" title="Ajouter un créneau">+</button>
+    `;
+    daysContainer.appendChild(row);
 
-                <div class="mb-3">
-                    <label for="event_type_id" class="form-label">Type d'événement</label>
-                    <select class="form-control" id="event_type_id" name="event_type_id" required>
-                        <option value="">Sélectionner un type d'événement</option>
-                        @foreach ($eventTypes as $eventType)
-                            <option value="{{ $eventType->id }}">{{ $eventType->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+    const checkbox = row.querySelector('.day-checkbox');
+    const slots = row.querySelector('.slots');
+    const addBtn = row.querySelector('.add-slot-btn');
 
-                <div class="mb-3">
-                    <label for="day_of_week" class="form-label">Jour de la semaine</label>
-                    <select class="form-control" id="day_of_week" name="day_of_week" required>
-                        <option value="">Sélectionner un jour</option>
-                        <option value="monday">Lundi</option>
-                        <option value="tuesday">Mardi</option>
-                        <option value="wednesday">Mercredi</option>
-                        <option value="thursday">Jeudi</option>
-                        <option value="friday">Vendredi</option>
-                        <option value="saturday">Samedi</option>
-                        <option value="sunday">Dimanche</option>
-                    </select>
-                </div>
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            addBtn.style.display = '';
+            if (slots.children.length === 0) addSlot(day.key, slots);
+        } else {
+            addBtn.style.display = 'none';
+            slots.innerHTML = '';
+        }
+    });
 
-                <div class="mb-3">
-                    <label for="start_time" class="form-label">Heure de début</label>
-                    <input type="time" class="form-control" id="start_time" name="start_time" required>
-                </div>
+    addBtn.addEventListener('click', function() {
+        addSlot(day.key, slots);
+    });
+});
 
-                <div class="mb-3">
-                    <label for="duration" class="form-label">Durée (en minutes)</label>
-                    <input type="number" class="form-control" id="duration" name="duration" min="1" required>
-                </div>
-
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="is_recurring" name="is_recurring" value="1" checked>
-                    <label class="form-check-label" for="is_recurring">Répéter chaque semaine</label>
-                </div>
-
-                <div class="mb-3">
-                    <label for="start_date" class="form-label">Date de début (si non récurrent ou pour limiter la récurrence)</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date">
-                </div>
-
-                <div class="mb-3">
-                    <label for="end_date" class="form-label">Date de fin (pour limiter la récurrence)</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date">
-                </div>
-
-                <div class="mb-3">
-                    <label for="price" class="form-label">Prix ($)</label>
-                    <input type="number" step="0.01" class="form-control" id="price" name="price" min="0">
-                </div>
-
-                <div class="mb-3">
-                    <label for="max_participants" class="form-label">Nombre maximum de participants</label>
-                    <input type="number" class="form-control" id="max_participants" name="max_participants" min="1">
-                </div>
-
-                <div class="mb-3">
-                    <label for="meeting_link" class="form-label">Lien de la réunion (si en ligne)</label>
-                    <input type="url" class="form-control" id="meeting_link" name="meeting_link">
-                </div>
-
-                <button type="submit" class="btn btn-primary">Ajouter la Disponibilité</button>
-                <a href="{{ route('availability.index') }}" class="btn btn-secondary">Annuler</a>
-            </form>
-        </main>
-
-        <footer>
-            <p>&copy; {{ date('Y') }} Mon Application de Réservation</p>
-        </footer>
-    </div>
-    <script src="{{ asset('js/app.js') }}"></script>
-    {{-- <script src="{{ asset('js/script.js') }}"></script> --}}
+function addSlot(day, container) {
+    const idx = container.children.length;
+    const slotDiv = document.createElement('div');
+    slotDiv.className = 'd-flex align-items-center mb-1';
+    slotDiv.innerHTML = `
+        <input type="time" class="form-control form-control-sm time-input" name="${day}_start[]" required>
+        <span class="mx-1">–</span>
+        <input type="time" class="form-control form-control-sm time-input" name="${day}_end[]" required>
+        <button type="button" class="remove-slot-btn" title="Supprimer ce créneau">&times;</button>
+    `;
+    slotDiv.querySelector('.remove-slot-btn').onclick = function() {
+        slotDiv.remove();
+    };
+    container.appendChild(slotDiv);
+}
+</script>
+<script src="{{ asset('register_theme/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>
