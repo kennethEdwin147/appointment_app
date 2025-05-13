@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Tokens
+    |--------------------------------------------------------------------------
+    |
+    | These tokens are used to secure API endpoints that peuvent être appelés
+    | by external services like EasyCron or Cronitor.
+    |
+    */
+
+    'reminder_api_token' => env('REMINDER_API_TOKEN'),
+
 ];

@@ -16,10 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('creator_id')->constrained()->onDelete('cascade');
             $table->foreignId('event_type_id')->constrained()->onDelete('cascade');
+            $table->foreignId('availability_id')->nullable()->constrained()->onDelete('set null')->comment('Référence à la disponibilité utilisée pour cette réservation');
             $table->string('guest_first_name')->nullable();
             $table->string('guest_last_name')->nullable();
             $table->dateTime('reserved_datetime');
+            $table->string('timezone')->nullable()->comment('Fuseau horaire de l\'utilisateur qui a fait la réservation');
+            $table->string('meeting_link')->nullable()->comment('Lien de réunion spécifique à cette réservation');
             $table->timestamp('reservation_time')->useCurrent();
+            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'rescheduled', 'completed'])->default('pending')->comment('Statut de la réservation indépendamment du paiement');
             $table->string('payment_status')->default('pending');
             $table->string('payment_id')->nullable();
             $table->timestamps();

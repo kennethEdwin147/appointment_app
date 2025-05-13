@@ -18,13 +18,13 @@
                     <i class="fa fa-arrow-left"></i> Retour
                 </a>
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     @if($eventType->description)
                         <p class="mb-4">{{ $eventType->description }}</p>
                     @endif
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -67,7 +67,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="d-flex justify-content-between">
                 <a href="{{ route('event_type.edit', $eventType) }}" class="btn btn-primary">
                     <i class="fa fa-edit"></i> Modifier

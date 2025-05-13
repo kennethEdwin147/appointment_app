@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reservation_id')->unique()->constrained()->onDelete('cascade');
-            $table->foreignId('payment_method_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('transaction_id')->nullable();
+            $table->string('payment_provider')->nullable()->comment('Fournisseur de paiement (stripe, paypal, manual)');
+            $table->string('payment_id')->nullable()->comment('ID de transaction du fournisseur');
             $table->decimal('amount', 8, 2);
             $table->string('currency', 10)->default('CAD');
             $table->string('status', 50);
+            $table->json('payment_details')->nullable()->comment('Détails supplémentaires du paiement');
             $table->decimal('platform_commission_rate', 5, 2)->nullable()->comment('Taux de commission de la plateforme appliqué à cette transaction');
             $table->decimal('platform_commission_amount', 8, 2)->nullable()->comment('Montant de la commission de la plateforme sur cette transaction');
             $table->timestamps();

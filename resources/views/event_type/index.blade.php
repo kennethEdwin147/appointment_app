@@ -35,19 +35,27 @@
                         @forelse($eventTypes as $eventType)
                             <tr>
                                 <td>{{ $eventType->name }}</td>
-                                <td>{{ $eventType->platform }}</td>
-                                <td>{{ $eventType->game }}</td>
+                                <td>{{ $eventType->default_duration }} min</td>
+                                <td>{{ $eventType->default_price ? number_format($eventType->default_price, 2) . ' €' : 'Gratuit' }}</td>
+                                <td>{{ $eventType->meeting_platform ? $eventType->meeting_platform->label() : '-' }}</td>
+                                <td>
+                                    @if($eventType->is_active)
+                                        <span class="badge bg-success">Actif</span>
+                                    @else
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ route('event_type.edit', $eventType) }}" class="btn btn-outline-primary btn-sm me-2">Modifier</a>
                                     <form action="{{ route('event_type.destroy', $eventType) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ce type ?')">Supprimer</button>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ce type ?')">Supprimer</button>
                                     </form>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-secondary">Aucun type d'événement</td></tr>
+                            <tr><td colspan="6" class="text-center text-secondary">Aucun type d'événement</td></tr>
                         @endforelse
                     </tbody>
                 </table>

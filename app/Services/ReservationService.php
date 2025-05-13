@@ -12,6 +12,12 @@ class ReservationService
     use HandlesTimezones;
 
     /**
+     * Stocke la dernière disponibilité vérifiée
+     * @var Availability|null
+     */
+    protected ?Availability $lastCheckedAvailability = null;
+
+    /**
      * Vérifie si un créneau est disponible dans le fuseau horaire du client
      */
     public function isSlotAvailable(
@@ -22,7 +28,7 @@ class ReservationService
     ): bool {
         // Convertir l'heure demandée du fuseau du client vers UTC
         $requestedUTC = Carbon::parse($requestedDateTime, $clientTimezone)->setTimezone('UTC');
-        
+
         // Extraire le jour de la semaine et l'heure
         $dayOfWeek = strtolower($requestedUTC->format('l'));
         $timeRequested = $requestedUTC->format('H:i');
@@ -52,8 +58,16 @@ class ReservationService
         $existingReservation = Reservation::where('creator_id', $creatorId)
             ->where('event_type_id', $eventTypeId)
             ->where('reserved_datetime', $requestedUTC)
-            ->where('payment_status', '!=', 'cancelled')
+            ->where(function($query) {
+                $query->where('status', '!=', 'cancelled')
+                      ->orWhere('payment_status', '!=', 'cancelled');
+            })
             ->exists();
+
+        // Si une disponibilité a été trouvée, on la stocke pour une utilisation ultérieure
+        if ($availability) {
+            $this->lastCheckedAvailability = $availability;
+        }
 
         return !$existingReservation;
     }
@@ -96,5 +110,13 @@ class ReservationService
         }
 
         return $slots;
+    }
+
+    /**
+     * Récupère la dernière disponibilité vérifiée
+     */
+    public function getLastCheckedAvailability(): ?Availability
+    {
+        return $this->lastCheckedAvailability;
     }
 }

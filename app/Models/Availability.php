@@ -15,10 +15,10 @@ class Availability extends Model
         'event_type_id',
         'day_of_week',
         'start_time',
-        'duration',
-        'start_date',
-        'end_date',
-        'is_recurring',
+        'end_time',
+        'effective_from',
+        'effective_until',
+        'is_active',
         'price',
         'max_participants',
         'meeting_link',
@@ -26,16 +26,17 @@ class Availability extends Model
 
     protected $casts = [
         'start_time' => 'datetime:H:i',
-        'start_date' => 'date:Y-m-d', // Ajoute ceci si ce n'est pas déjà là
-        'end_date' => 'date:Y-m-d',   // Ajoute ceci si ce n'est pas déjà là
-        'is_recurring' => 'boolean',
+        'end_time' => 'datetime:H:i',
+        'effective_from' => 'date:Y-m-d',
+        'effective_until' => 'date:Y-m-d',
+        'is_active' => 'boolean',
         'price' => 'float',
         'max_participants' => 'integer',
     ];
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class); // Assure-toi que le modèle User est correct
+        return $this->belongsTo(User::class, 'creator_id');
     }
 
     public function eventType(): BelongsTo
@@ -43,8 +44,17 @@ class Availability extends Model
         return $this->belongsTo(EventType::class);
     }
 
-    public function getEndTimeAttribute()
+    public function getDurationAttribute()
     {
-        return $this->start_time->addMinutes($this->duration);
+        if (!$this->start_time || !$this->end_time) {
+            return null;
+        }
+
+        return $this->start_time->diffInMinutes($this->end_time);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
     }
 }
