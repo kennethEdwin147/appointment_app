@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Timezone;
-use App\Models\Creator;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -11,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\Rules\Enum;
 
 class AuthController extends Controller
 {
@@ -55,51 +52,7 @@ class AuthController extends Controller
         return redirect('/home'); // Redirection mise à jour pour Laravel 12
     }
 
-    /**
-     * Show the registration form for creators.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function showCreatorRegistrationForm()
-    {
-        return view('auth.register_creator'); // Créer cette vue
-    }
-
-    /**
-     * Handle a registration request for creators.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
-     */
-    public function registerCreator(Request $request)
-    {
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', new Password(8), 'confirmed'],
-            'timezone' => ['required', new Enum(Timezone::class)],
-        ]);
-
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'creator', // Rôle 'creator' pour l'inscription créateur
-        ]);
-
-        Creator::create([
-            'user_id' => $user->id,
-            'timezone' => $request->timezone
-        ]); // Création immédiate du profil de créateur
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect()->route('creator.dashboard'); // Redirection vers la route nommée
-    }
+    // Les méthodes d'inscription créateur ont été déplacées vers CreatorRegistrationController
 
     /**
      * Show the login form.
