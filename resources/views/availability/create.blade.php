@@ -4,84 +4,206 @@
     <title>Configurer mes disponibilités</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
-    <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap/bootstrap.min.css') }}">
     <style>
-        body { background: #f5f6fa; color: #222; font-family: 'DM Sans', sans-serif; }
-        .avail-box {
-            background: #fff;
-            border-radius: 16px;
-            padding: 2rem 1.5rem;
-            max-width: 500px;
-            margin: 2rem auto;
-            box-shadow: 0 2px 12px #0001;
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background: #f5f6fa;
         }
-        .avail-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.2rem; }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col {
+            flex: 1;
+            padding: 0 10px;
+            min-width: 150px;
+            margin-bottom: 15px;
+        }
+        .checkbox {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .checkbox input {
+            width: auto;
+            margin-right: 10px;
+        }
+        .checkbox label {
+            display: inline;
+            font-weight: normal;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .alert {
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .hidden {
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 5px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-footer {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 15px;
+            text-align: right;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+
+        /* Styles spécifiques pour les disponibilités */
         .day-row {
             display: flex;
             align-items: center;
             background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            padding: 0.4rem 0.7rem;
-            font-size: 0.98rem;
-            border: 1px solid #e3e6ed;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            padding: 8px;
         }
-        .day-row input[type="checkbox"] { accent-color: #0d6efd; margin-right: 0.7rem; }
-        .day-label { width: 38px; }
+        .day-label {
+            width: 40px;
+            font-weight: bold;
+        }
+        .slots {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
         .time-input {
             width: 100px;
-            background: #fff;
-            color: #222;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 0.95rem;
-            padding: 2px 6px;
+        }
+        .time-separator {
+            margin: 0 5px;
         }
         .add-slot-btn {
             background: none;
             border: none;
-            color: #0d6efd;
-            font-size: 1.2rem;
-            margin-left: 0.5rem;
-            padding: 0 0.2rem;
+            color: #4CAF50;
+            font-size: 20px;
             cursor: pointer;
+            margin-left: 10px;
         }
         .remove-slot-btn {
             background: none;
             border: none;
-            color: #dc3545;
-            font-size: 1.1rem;
-            margin-left: 0.3rem;
+            color: #f44336;
+            font-size: 18px;
             cursor: pointer;
+            margin-left: 5px;
         }
-        .remove-slot-btn:hover { color: #fff; background: #dc3545; border-radius: 50%; }
-        .save-btn {
-            width: 100%;
-            border-radius: 2rem;
-            font-size: 1.08rem;
-            background: #0d6efd;
-            border: none;
-            color: #fff;
-            margin-top: 1.2rem;
-            font-weight: 600;
-            padding: 0.7rem 0;
+        .slot-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
         }
-        .slots { flex-grow: 1; display: flex; flex-wrap: wrap; gap: 0.3rem; }
-        .mx-1 { margin-left: 0.18rem !important; margin-right: 0.18rem !important; }
     </style>
 </head>
 <body>
-<div class="avail-box">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="avail-title">Configurer vos disponibilités</div>
-        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#timezoneHelpModal">
-            <i class="fas fa-clock"></i> Aide fuseaux horaires
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Configurer vos disponibilités</h2>
+        <button type="button" id="openTimezoneHelp" class="btn btn-secondary" style="padding: 5px 10px; font-size: 14px;">
+            Aide fuseaux horaires
         </button>
     </div>
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
+        <div class="alert">
+            <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -91,63 +213,84 @@
     <form id="availabilityForm" method="POST" action="{{ route('availability.store') }}" autocomplete="off">
         @csrf
         <input type="hidden" name="availability_type" value="repeating">
-        <div class="mb-3">
-            <label class="form-label fw-medium text-muted" for="event_type_id">Type d'événement</label>
-            <select class="form-control @error('event_type_id') is-invalid @enderror" name="event_type_id" id="event_type_id" required>
+        <div class="form-group">
+            <label for="event_type_id">Type d'événement</label>
+            <select name="event_type_id" id="event_type_id" required>
                 <option value="">Sélectionnez un type d'événement</option>
                 @foreach($eventTypes as $eventType)
                     <option value="{{ $eventType->id }}">{{ $eventType->name }}</option>
                 @endforeach
             </select>
+            @error('event_type_id')
+                <div class="error">{{ $message }}</div>
+            @enderror
         </div>
-        <div class="row mb-3">
-            <div class="col-md-4 mb-2">
-                <label class="form-label fw-medium text-muted" for="duration">Durée (min)</label>
-                <input type="number" class="form-control" name="duration" id="duration" min="1" required>
+        <div class="row">
+            <div class="col">
+                <label for="duration">Durée (min)</label>
+                <input type="number" name="duration" id="duration" min="1" required>
+                @error('duration')
+                    <div class="error">{{ $message }}</div>
+                @enderror
             </div>
-            <div class="col-md-4 mb-2">
-                <label class="form-label fw-medium text-muted" for="price">Prix (€)</label>
-                <input type="number" class="form-control" name="price" id="price" step="0.01" min="0">
+            <div class="col">
+                <label for="price">Prix (€)</label>
+                <input type="number" name="price" id="price" step="0.01" min="0">
+                @error('price')
+                    <div class="error">{{ $message }}</div>
+                @enderror
             </div>
-            <div class="col-md-4 mb-2">
-                <label class="form-label fw-medium text-muted" for="max_participants">Max participants</label>
-                <input type="number" class="form-control" name="max_participants" id="max_participants" min="1">
+            <div class="col">
+                <label for="max_participants">Max participants</label>
+                <input type="number" name="max_participants" id="max_participants" min="1">
+                @error('max_participants')
+                    <div class="error">{{ $message }}</div>
+                @enderror
             </div>
         </div>
-        <div class="row mb-3">
-            <div class="col-md-6 mb-2">
-                <label class="form-label fw-medium text-muted" for="start_date">Date de début</label>
-                <input type="date" class="form-control" name="start_date" id="start_date">
+        <div class="row">
+            <div class="col">
+                <label for="start_date">Date de début</label>
+                <input type="date" name="start_date" id="start_date">
+                @error('start_date')
+                    <div class="error">{{ $message }}</div>
+                @enderror
             </div>
-            <div class="col-md-6 mb-2">
-                <label class="form-label fw-medium text-muted" for="end_date">Date de fin</label>
-                <input type="date" class="form-control" name="end_date" id="end_date">
+            <div class="col">
+                <label for="end_date">Date de fin</label>
+                <input type="date" name="end_date" id="end_date">
+                @error('end_date')
+                    <div class="error">{{ $message }}</div>
+                @enderror
             </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-medium text-muted" for="meeting_link">Lien de la réunion</label>
-            <input type="url" class="form-control" name="meeting_link" id="meeting_link">
+        <div class="form-group">
+            <label for="meeting_link">Lien de la réunion</label>
+            <input type="url" name="meeting_link" id="meeting_link">
+            @error('meeting_link')
+                <div class="error">{{ $message }}</div>
+            @enderror
         </div>
-        <div class="form-check mb-4">
-            <input class="form-check-input" type="checkbox" value="1" id="is_recurring" name="is_recurring" checked>
-            <label class="form-check-label" for="is_recurring">Disponibilité récurrente</label>
+        <div class="checkbox">
+            <input type="checkbox" value="1" id="is_recurring" name="is_recurring" checked>
+            <label for="is_recurring">Disponibilité récurrente</label>
         </div>
-        <div class="mb-4">
-            <label class="form-label fw-medium text-muted">Sélectionnez vos jours et horaires disponibles</label>
+        <div class="form-group">
+            <label>Sélectionnez vos jours et horaires disponibles</label>
             <div id="daysContainer"></div>
         </div>
-        <button type="submit" class="btn save-btn">Enregistrer les disponibilités</button>
+        <button type="submit" class="btn btn-full">Enregistrer les disponibilités</button>
     </form>
 </div>
 <script>
 const days = [
-    { key: 'monday', label: 'Mon' },
-    { key: 'tuesday', label: 'Tue' },
-    { key: 'wednesday', label: 'Wed' },
-    { key: 'thursday', label: 'Thu' },
-    { key: 'friday', label: 'Fri' },
-    { key: 'saturday', label: 'Sat' },
-    { key: 'sunday', label: 'Sun' }
+    { key: 'monday', label: 'Lun' },
+    { key: 'tuesday', label: 'Mar' },
+    { key: 'wednesday', label: 'Mer' },
+    { key: 'thursday', label: 'Jeu' },
+    { key: 'friday', label: 'Ven' },
+    { key: 'saturday', label: 'Sam' },
+    { key: 'sunday', label: 'Dim' }
 ];
 
 const daysContainer = document.getElementById('daysContainer');
@@ -157,14 +300,14 @@ days.forEach(day => {
     row.className = 'day-row';
     row.dataset.day = day.key;
     row.innerHTML = `
-        <input type="checkbox" class="form-check-input day-checkbox" id="day_${day.key}" name="days[]" value="${day.key}">
+        <input type="checkbox" id="day_${day.key}" name="days[]" value="${day.key}">
         <label class="day-label" for="day_${day.key}">${day.label}</label>
         <div class="slots"></div>
         <button type="button" class="add-slot-btn" style="display:none;" title="Ajouter un créneau">+</button>
     `;
     daysContainer.appendChild(row);
 
-    const checkbox = row.querySelector('.day-checkbox');
+    const checkbox = row.querySelector('input[type="checkbox"]');
     const slots = row.querySelector('.slots');
     const addBtn = row.querySelector('.add-slot-btn');
 
@@ -186,11 +329,11 @@ days.forEach(day => {
 function addSlot(day, container) {
     const idx = container.children.length;
     const slotDiv = document.createElement('div');
-    slotDiv.className = 'd-flex align-items-center mb-1';
+    slotDiv.className = 'slot-container';
     slotDiv.innerHTML = `
-        <input type="time" class="form-control form-control-sm time-input" name="${day}_start[]" required>
-        <span class="mx-1">–</span>
-        <input type="time" class="form-control form-control-sm time-input" name="${day}_end[]" required>
+        <input type="time" class="time-input" name="${day}_start[]" required>
+        <span class="time-separator">–</span>
+        <input type="time" class="time-input" name="${day}_end[]" required>
         <button type="button" class="remove-slot-btn" title="Supprimer ce créneau">&times;</button>
     `;
     slotDiv.querySelector('.remove-slot-btn').onclick = function() {
@@ -199,12 +342,10 @@ function addSlot(day, container) {
     container.appendChild(slotDiv);
 }
 </script>
-<script src="{{ asset('register_theme/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('js/timezone-helper.js') }}"></script>
 
 <!-- Afficher les avertissements de changement d'heure s'il y en a -->
 @if (session('dst_warnings'))
-    <div class="alert alert-warning">
+    <div class="alert" style="background-color: #fff3cd; color: #856404; margin-top: 20px;">
         <strong>Attention aux changements d'heure :</strong>
         <ul>
             @foreach (session('dst_warnings') as $warning)
@@ -215,22 +356,46 @@ function addSlot(day, container) {
 @endif
 
 <!-- Modal d'aide sur les fuseaux horaires -->
-<div class="modal fade" id="timezoneHelpModal" tabindex="-1" aria-labelledby="timezoneHelpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="timezoneHelpModalLabel">Aide sur les fuseaux horaires</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                @include('partials.timezone-help')
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <a href="{{ route('documentation.timezone') }}" target="_blank" class="btn btn-primary">Documentation complète</a>
-            </div>
+<div id="timezoneHelpModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Aide sur les fuseaux horaires</h3>
+            <span class="close" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            @include('partials.timezone-help')
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="closeModalBtn">Fermer</button>
+            <a href="{{ route('documentation.timezone') }}" target="_blank" class="btn">Documentation complète</a>
         </div>
     </div>
 </div>
+
+<script>
+// Modal functionality
+const modal = document.getElementById('timezoneHelpModal');
+const openModalBtn = document.getElementById('openTimezoneHelp');
+const closeModal = document.getElementById('closeModal');
+const closeModalBtn = document.getElementById('closeModalBtn');
+
+openModalBtn.addEventListener('click', function() {
+    modal.style.display = 'block';
+});
+
+closeModal.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+closeModalBtn.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
 </body>
 </html>
