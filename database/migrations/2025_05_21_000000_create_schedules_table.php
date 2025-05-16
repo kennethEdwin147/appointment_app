@@ -86,6 +86,40 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Pas de down pour cette migration de développement
+        // Suppression de la table pivot availability_event_type si elle existe
+        if (Schema::hasTable('availability_event_type')) {
+            Schema::dropIfExists('availability_event_type');
+        }
+
+        // Restauration de la table des disponibilités
+        Schema::table('availabilities', function (Blueprint $table) {
+            // Suppression de la contrainte d'unicité
+            $table->dropUnique('unique_availability_slot_schedule');
+
+            // Suppression de la référence à l'horaire
+            $table->dropForeign(['schedule_id']);
+            $table->dropColumn('schedule_id');
+
+            // Restauration de la référence au créateur
+            $table->foreignId('creator_id')->after('id')->constrained('users')->onDelete('cascade');
+
+            // Restauration de la colonne event_type_id
+            $table->foreignId('event_type_id')->nullable()->after('creator_id')->constrained()->onDelete('cascade');
+
+            // Restauration de l'ancienne contrainte d'unicité
+            $table->unique(
+                ['creator_id', 'day_of_week', 'start_time', 'effective_from', 'effective_until'],
+                'unique_availability_slot'
+            );
+        });
+
+        // Suppression de la référence à l'horaire dans la table des types d'événements
+        Schema::table('event_types', function (Blueprint $table) {
+            $table->dropForeign(['schedule_id']);
+            $table->dropColumn('schedule_id');
+        });
+
+        // Suppression de la table des horaires
+        Schema::dropIfExists('schedules');
     }
 };
