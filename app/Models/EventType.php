@@ -36,16 +36,16 @@ class EventType extends Model
 
     public function availabilities()
     {
-        return $this->hasMany(Availability::class);
+        return $this->belongsToMany(Availability::class, 'availability_event_type');
     }
 
     public function activeAvailabilities()
     {
-        return $this->hasMany(Availability::class)
-                    ->where('is_active', true)
+        return $this->belongsToMany(Availability::class, 'availability_event_type')
+                    ->where('availabilities.is_active', true)
                     ->where(function ($query) {
-                        $query->whereNull('effective_until')
-                              ->orWhere('effective_until', '>=', now());
+                        $query->whereNull('availabilities.effective_until')
+                              ->orWhere('availabilities.effective_until', '>=', now());
                     });
     }
 

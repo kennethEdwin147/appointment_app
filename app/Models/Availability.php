@@ -12,7 +12,6 @@ class Availability extends Model
 
     protected $fillable = [
         'creator_id',
-        'event_type_id',
         'day_of_week',
         'start_time',
         'end_time',
@@ -39,9 +38,9 @@ class Availability extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function eventType(): BelongsTo
+    public function eventTypes()
     {
-        return $this->belongsTo(EventType::class);
+        return $this->belongsToMany(EventType::class, 'availability_event_type');
     }
 
     public function getDurationAttribute()

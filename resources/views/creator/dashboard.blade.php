@@ -56,7 +56,7 @@
                                             <li><a href="{{ route('availability.index') }}" class="text-purple-400 hover:text-purple-300">{{ __('Gérer vos disponibilités') }}</a></li>
                                             <li><a href="#" class="text-purple-400 hover:text-purple-300">{{ __('Consulter vos réservations') }}</a></li>
                                             <li><a href="{{ route('event_type.create') }}" class="text-purple-400 hover:text-purple-300">{{ __('Créer un type d\'événement') }}</a></li>
-                                            <li><a href="{{ route('availability.create') }}" class="text-purple-400 hover:text-purple-300">{{ __('Créer une disponibilité') }}</a></li>
+                                           
                                         </ul>
                                     </div>
                                 </div>
