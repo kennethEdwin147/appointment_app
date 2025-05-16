@@ -5,192 +5,42 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            background: #f5f6fa;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 0 -10px;
-        }
-        .col {
-            flex: 1;
-            padding: 0 10px;
-            min-width: 150px;
-            margin-bottom: 15px;
-        }
-        .checkbox {
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
-        .checkbox input {
-            width: auto;
-            margin-right: 10px;
-        }
-        .checkbox label {
-            display: inline;
-            font-weight: normal;
-        }
-        .error {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        .alert {
-            padding: 10px;
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn:hover {
-            background-color: #45a049;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        .btn-full {
-            width: 100%;
-        }
-        .hidden {
-            display: none;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 700px;
-            border-radius: 5px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .modal-footer {
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-            margin-top: 15px;
-            text-align: right;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover {
-            color: black;
-        }
+        /* Styles minimaux essentiels */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; border: 1px solid #ddd; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 3px; }
+        input, select, textarea { width: 100%; padding: 5px; border: 1px solid #ccc; }
+        .row { display: flex; flex-wrap: wrap; }
+        .col { flex: 1; padding: 0 5px; min-width: 150px; }
+        .checkbox { margin: 10px 0; }
+        .checkbox input { width: auto; margin-right: 5px; }
+        .checkbox label { display: inline; }
+        .btn { padding: 8px 12px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .btn-secondary { background: #6c757d; }
+        .btn-full { width: 100%; }
+        .error { color: red; font-size: 0.9em; }
+        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; margin-bottom: 10px; }
+        .hidden { display: none; }
 
-        /* Styles spécifiques pour les disponibilités */
-        .day-row {
-            display: flex;
-            align-items: center;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            padding: 8px;
-        }
-        .day-label {
-            width: 40px;
-            font-weight: bold;
-        }
-        .slots {
-            flex-grow: 1;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .time-input {
-            width: 100px;
-        }
-        .time-separator {
-            margin: 0 5px;
-        }
-        .add-slot-btn {
-            background: none;
-            border: none;
-            color: #4CAF50;
-            font-size: 20px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .remove-slot-btn {
-            background: none;
-            border: none;
-            color: #f44336;
-            font-size: 18px;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        .slot-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
+        /* Modal minimal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background: white; margin: 10% auto; padding: 15px; border: 1px solid #888; width: 80%; max-width: 600px; }
+        .modal-header, .modal-footer { padding: 10px 0; }
+        .modal-header { border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
+        .modal-footer { border-top: 1px solid #ddd; text-align: right; }
+        .close { color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; }
+
+        /* Styles pour les disponibilités */
+        .day-row { display: flex; align-items: center; border: 1px solid #ddd; margin-bottom: 5px; padding: 5px; }
+        .day-label { width: 40px; }
+        .slots { flex-grow: 1; display: flex; flex-wrap: wrap; }
+        .time-input { width: 100px; }
+        .time-separator { margin: 0 5px; }
+        .add-slot-btn, .remove-slot-btn { background: none; border: none; cursor: pointer; }
+        .add-slot-btn { color: green; font-size: 18px; }
+        .remove-slot-btn { color: red; font-size: 16px; }
+        .slot-container { display: flex; align-items: center; margin-bottom: 5px; }
     </style>
 </head>
 <body>

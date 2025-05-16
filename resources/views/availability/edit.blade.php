@@ -3,20 +3,54 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>{{ config('app.name', 'Laravel') }} - Modifier la Disponibilité</title>
+    <style>
+        /* Styles minimaux essentiels */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; border: 1px solid #ddd; }
+        header { margin-bottom: 15px; }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin-top: 0; }
+        nav ul { list-style: none; padding: 0; display: flex; gap: 15px; }
+        nav a, nav button { text-decoration: none; color: #4CAF50; background: none; border: none; cursor: pointer; }
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    {{-- <link rel="stylesheet" href="{{ asset('css/style.css') }}"> --}}
+        /* Formulaire */
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 3px; }
+        input, select, textarea { width: 100%; padding: 5px; border: 1px solid #ccc; }
+        .checkbox { display: flex; align-items: center; margin: 10px 0; }
+        .checkbox input { width: auto; margin-right: 5px; }
 
+        /* Boutons */
+        .btn { padding: 8px 12px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-right: 5px; text-decoration: none; display: inline-block; }
+        .btn-secondary { background: #6c757d; }
+        .btn-outline { background: white; color: #4CAF50; border: 1px solid #4CAF50; }
+
+        /* Alertes */
+        .alert { padding: 10px; margin-bottom: 10px; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .alert-warning { background-color: #fff3cd; color: #856404; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; }
+
+        /* Pied de page */
+        footer { margin-top: 20px; text-align: center; color: #6c757d; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background: white; margin: 10% auto; padding: 15px; border: 1px solid #888; width: 80%; max-width: 600px; }
+        .modal-header, .modal-footer { padding: 10px 0; }
+        .modal-header { border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
+        .modal-footer { border-top: 1px solid #ddd; text-align: right; }
+        .close { color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="header-flex">
                 <h1>Modifier la Disponibilité</h1>
-                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#timezoneHelpModal">
-                    <i class="fas fa-clock"></i> Aide fuseaux horaires
+                <button type="button" class="btn btn-outline" id="openTimezoneHelp">
+                    Aide fuseaux horaires
                 </button>
             </div>
             <nav>
@@ -48,9 +82,9 @@
                 @csrf
                 @method('PUT')
 
-                <div class="mb-3">
-                    <label for="event_type_id" class="form-label">Type d'événement</label>
-                    <select class="form-control" id="event_type_id" name="event_type_id" required>
+                <div class="form-group">
+                    <label for="event_type_id">Type d'événement</label>
+                    <select id="event_type_id" name="event_type_id" required>
                         <option value="">Sélectionner un type d'événement</option>
                         @foreach ($eventTypes as $eventType)
                             <option value="{{ $eventType->id }}" {{ $availability->event_type_id == $eventType->id ? 'selected' : '' }}>{{ $eventType->name }}</option>
@@ -58,9 +92,9 @@
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label for="day_of_week" class="form-label">Jour de la semaine</label>
-                    <select class="form-control" id="day_of_week" name="day_of_week" required>
+                <div class="form-group">
+                    <label for="day_of_week">Jour de la semaine</label>
+                    <select id="day_of_week" name="day_of_week" required>
                         <option value="">Sélectionner un jour</option>
                         <option value="monday" {{ $availability->day_of_week == 'monday' ? 'selected' : '' }}>Lundi</option>
                         <option value="tuesday" {{ $availability->day_of_week == 'tuesday' ? 'selected' : '' }}>Mardi</option>
@@ -72,47 +106,47 @@
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label for="start_time" class="form-label">Heure de début</label>
-                    <input type="time" class="form-control" id="start_time" name="start_time" value="{{ $availability->start_time->format('H:i') }}" required>
+                <div class="form-group">
+                    <label for="start_time">Heure de début</label>
+                    <input type="time" id="start_time" name="start_time" value="{{ $availability->start_time->format('H:i') }}" required>
                 </div>
 
-                <div class="mb-3">
-                    <label for="duration" class="form-label">Durée (en minutes)</label>
-                    <input type="number" class="form-control" id="duration" name="duration" min="1" value="{{ $availability->duration }}" required>
+                <div class="form-group">
+                    <label for="duration">Durée (en minutes)</label>
+                    <input type="number" id="duration" name="duration" min="1" value="{{ $availability->duration }}" required>
                 </div>
 
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="is_recurring" name="is_recurring" value="1" {{ $availability->is_recurring ? 'checked' : '' }}>
-                    <label class="form-check-label" for="is_recurring">Répéter chaque semaine</label>
+                <div class="checkbox">
+                    <input type="checkbox" id="is_recurring" name="is_recurring" value="1" {{ $availability->is_recurring ? 'checked' : '' }}>
+                    <label for="is_recurring">Répéter chaque semaine</label>
                 </div>
 
-                <div class="mb-3">
-                    <label for="start_date" class="form-label">Date de début (si non récurrent ou pour limiter la récurrence)</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ $availability->start_date ? $availability->start_date->format('Y-m-d') : '' }}">
+                <div class="form-group">
+                    <label for="start_date">Date de début (si non récurrent ou pour limiter la récurrence)</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ $availability->start_date ? $availability->start_date->format('Y-m-d') : '' }}">
                 </div>
 
-                <div class="mb-3">
-                    <label for="end_date" class="form-label">Date de fin (pour limiter la récurrence)</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ $availability->end_date ? $availability->end_date->format('Y-m-d') : '' }}">
+                <div class="form-group">
+                    <label for="end_date">Date de fin (pour limiter la récurrence)</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ $availability->end_date ? $availability->end_date->format('Y-m-d') : '' }}">
                 </div>
 
-                <div class="mb-3">
-                    <label for="price" class="form-label">Prix ($)</label>
-                    <input type="number" step="0.01" class="form-control" id="price" name="price" min="0" value="{{ $availability->price }}">
+                <div class="form-group">
+                    <label for="price">Prix (€)</label>
+                    <input type="number" step="0.01" id="price" name="price" min="0" value="{{ $availability->price }}">
                 </div>
 
-                <div class="mb-3">
-                    <label for="max_participants" class="form-label">Nombre maximum de participants</label>
-                    <input type="number" class="form-control" id="max_participants" name="max_participants" min="1" value="{{ $availability->max_participants }}">
+                <div class="form-group">
+                    <label for="max_participants">Nombre maximum de participants</label>
+                    <input type="number" id="max_participants" name="max_participants" min="1" value="{{ $availability->max_participants }}">
                 </div>
 
-                <div class="mb-3">
-                    <label for="meeting_link" class="form-label">Lien de la réunion (si en ligne)</label>
-                    <input type="url" class="form-control" id="meeting_link" name="meeting_link" value="{{ $availability->meeting_link }}">
+                <div class="form-group">
+                    <label for="meeting_link">Lien de la réunion (si en ligne)</label>
+                    <input type="url" id="meeting_link" name="meeting_link" value="{{ $availability->meeting_link }}">
                 </div>
 
-                <button type="submit" class="btn btn-primary">Enregistrer les Modifications</button>
+                <button type="submit" class="btn">Enregistrer les Modifications</button>
                 <a href="{{ route('availability.index') }}" class="btn btn-secondary">Annuler</a>
             </form>
         </main>
@@ -121,8 +155,6 @@
             <p>&copy; {{ date('Y') }} Mon Application de Réservation</p>
         </footer>
     </div>
-    <script src="{{ asset('js/app.js') }}"></script>
-    <script src="{{ asset('js/timezone-helper.js') }}"></script>
 
     <!-- Afficher les avertissements de changement d'heure s'il y en a -->
     @if (session('dst_warnings'))
@@ -144,22 +176,48 @@
     @endif
 
     <!-- Modal d'aide sur les fuseaux horaires -->
-    <div class="modal fade" id="timezoneHelpModal" tabindex="-1" aria-labelledby="timezoneHelpModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="timezoneHelpModalLabel">Aide sur les fuseaux horaires</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                    @include('partials.timezone-help')
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <a href="{{ route('documentation.timezone') }}" target="_blank" class="btn btn-primary">Documentation complète</a>
-                </div>
+    <div id="timezoneHelpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Aide sur les fuseaux horaires</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                @include('partials.timezone-help')
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeModalBtn">Fermer</button>
+                <a href="{{ route('documentation.timezone') }}" target="_blank" class="btn">Documentation complète</a>
             </div>
         </div>
     </div>
+
+    <script>
+    // Modal functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('timezoneHelpModal');
+        const openModalBtn = document.getElementById('openTimezoneHelp');
+        const closeModal = document.getElementById('closeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        openModalBtn.addEventListener('click', function() {
+            modal.style.display = 'block';
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        closeModalBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
