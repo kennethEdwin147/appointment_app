@@ -10,5 +10,6 @@ require base_path('routes/creator.php');
 require base_path('routes/event_type.php');
 require base_path('routes/user.php');
 require base_path('routes/availability.php');
+require base_path('routes/schedule.php');
 require base_path('routes/documentation.php');
 // require base_path('routes/public.php');
