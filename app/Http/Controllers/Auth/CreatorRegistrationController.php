@@ -22,7 +22,7 @@ class CreatorRegistrationController extends Controller
 
     public function showRegistrationForm()
     {
-        return view('auth.register_creator');
+        return view('auth.creator.register');
     }
 
     public function register(Request $request)

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
     <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap.min.css') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}">
 </head>
 <body>
     <div class="">
@@ -104,7 +104,7 @@
             </div>
         </section>
     </div>
-    <script src="{{ asset('js/bootstrap/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('register_theme/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('js/timezone-helper.js') }}"></script>
 </body>
 </html>
