@@ -62,7 +62,6 @@
     @endif
     <form id="availabilityForm" method="POST" action="{{ route('availability.store') }}" autocomplete="off">
         @csrf
-        <input type="hidden" name="availability_type" value="repeating">
         <div class="form-group">
             <label for="event_type_id">Type d'événement</label>
             <select name="event_type_id" id="event_type_id" required>
@@ -75,23 +74,51 @@
                 <div class="error">{{ $message }}</div>
             @enderror
         </div>
+
+        <div class="form-group">
+            <label for="day_of_week">Jour de la semaine</label>
+            <select name="day_of_week" id="day_of_week" required>
+                <option value="">Sélectionnez un jour</option>
+                <option value="monday">Lundi</option>
+                <option value="tuesday">Mardi</option>
+                <option value="wednesday">Mercredi</option>
+                <option value="thursday">Jeudi</option>
+                <option value="friday">Vendredi</option>
+                <option value="saturday">Samedi</option>
+                <option value="sunday">Dimanche</option>
+            </select>
+            @error('day_of_week')
+                <div class="error">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="row">
             <div class="col">
-                <label for="duration">Durée (min)</label>
-                <input type="number" name="duration" id="duration" min="1" required>
-                @error('duration')
+                <label for="start_time">Heure de début</label>
+                <input type="time" name="start_time" id="start_time" required>
+                @error('start_time')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
             <div class="col">
-                <label for="price">Prix (€)</label>
+                <label for="end_time">Heure de fin</label>
+                <input type="time" name="end_time" id="end_time" required>
+                @error('end_time')
+                    <div class="error">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="price">Prix (€) (optionnel)</label>
                 <input type="number" name="price" id="price" step="0.01" min="0">
                 @error('price')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
             <div class="col">
-                <label for="max_participants">Max participants</label>
+                <label for="max_participants">Max participants (optionnel)</label>
                 <input type="number" name="max_participants" id="max_participants" min="1">
                 @error('max_participants')
                     <div class="error">{{ $message }}</div>
@@ -100,97 +127,36 @@
         </div>
         <div class="row">
             <div class="col">
-                <label for="start_date">Date de début</label>
-                <input type="date" name="start_date" id="start_date">
-                @error('start_date')
+                <label for="effective_from">Date de début</label>
+                <input type="date" name="effective_from" id="effective_from">
+                @error('effective_from')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
             <div class="col">
-                <label for="end_date">Date de fin</label>
-                <input type="date" name="end_date" id="end_date">
-                @error('end_date')
+                <label for="effective_until">Date de fin</label>
+                <input type="date" name="effective_until" id="effective_until">
+                @error('effective_until')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
         </div>
         <div class="form-group">
-            <label for="meeting_link">Lien de la réunion</label>
+            <label for="meeting_link">Lien de la réunion (optionnel)</label>
             <input type="url" name="meeting_link" id="meeting_link">
             @error('meeting_link')
                 <div class="error">{{ $message }}</div>
             @enderror
         </div>
         <div class="checkbox">
-            <input type="checkbox" value="1" id="is_recurring" name="is_recurring" checked>
-            <label for="is_recurring">Disponibilité récurrente</label>
+            <input type="checkbox" value="1" id="is_active" name="is_active" checked>
+            <label for="is_active">Disponibilité active</label>
         </div>
-        <div class="form-group">
-            <label>Sélectionnez vos jours et horaires disponibles</label>
-            <div id="daysContainer"></div>
-        </div>
-        <button type="submit" class="btn btn-full">Enregistrer les disponibilités</button>
+        <button type="submit" class="btn btn-full">Enregistrer la disponibilité</button>
     </form>
 </div>
 <script>
-const days = [
-    { key: 'monday', label: 'Lun' },
-    { key: 'tuesday', label: 'Mar' },
-    { key: 'wednesday', label: 'Mer' },
-    { key: 'thursday', label: 'Jeu' },
-    { key: 'friday', label: 'Ven' },
-    { key: 'saturday', label: 'Sam' },
-    { key: 'sunday', label: 'Dim' }
-];
-
-const daysContainer = document.getElementById('daysContainer');
-
-days.forEach(day => {
-    const row = document.createElement('div');
-    row.className = 'day-row';
-    row.dataset.day = day.key;
-    row.innerHTML = `
-        <input type="checkbox" id="day_${day.key}" name="days[]" value="${day.key}">
-        <label class="day-label" for="day_${day.key}">${day.label}</label>
-        <div class="slots"></div>
-        <button type="button" class="add-slot-btn" style="display:none;" title="Ajouter un créneau">+</button>
-    `;
-    daysContainer.appendChild(row);
-
-    const checkbox = row.querySelector('input[type="checkbox"]');
-    const slots = row.querySelector('.slots');
-    const addBtn = row.querySelector('.add-slot-btn');
-
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            addBtn.style.display = '';
-            if (slots.children.length === 0) addSlot(day.key, slots);
-        } else {
-            addBtn.style.display = 'none';
-            slots.innerHTML = '';
-        }
-    });
-
-    addBtn.addEventListener('click', function() {
-        addSlot(day.key, slots);
-    });
-});
-
-function addSlot(day, container) {
-    const idx = container.children.length;
-    const slotDiv = document.createElement('div');
-    slotDiv.className = 'slot-container';
-    slotDiv.innerHTML = `
-        <input type="time" class="time-input" name="${day}_start[]" required>
-        <span class="time-separator">–</span>
-        <input type="time" class="time-input" name="${day}_end[]" required>
-        <button type="button" class="remove-slot-btn" title="Supprimer ce créneau">&times;</button>
-    `;
-    slotDiv.querySelector('.remove-slot-btn').onclick = function() {
-        slotDiv.remove();
-    };
-    container.appendChild(slotDiv);
-}
+// Script pour le modal d'aide sur les fuseaux horaires
 </script>
 
 <!-- Afficher les avertissements de changement d'heure s'il y en a -->
