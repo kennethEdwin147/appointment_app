@@ -8,39 +8,83 @@
         /* Styles minimaux essentiels */
         body { font-family: Arial, sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 800px; margin: 0 auto; padding: 15px; border: 1px solid #ddd; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; margin-bottom: 3px; }
-        input, select, textarea { width: 100%; padding: 5px; border: 1px solid #ccc; }
-        .row { display: flex; flex-wrap: wrap; }
-        .col { flex: 1; padding: 0 5px; min-width: 150px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .row { display: flex; flex-wrap: wrap; margin: 0 -10px; }
+        .col { flex: 1; padding: 0 10px; min-width: 150px; }
         .checkbox { margin: 10px 0; }
         .checkbox input { width: auto; margin-right: 5px; }
         .checkbox label { display: inline; }
-        .btn { padding: 8px 12px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .btn { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
         .btn-secondary { background: #6c757d; }
         .btn-full { width: 100%; }
-        .error { color: red; font-size: 0.9em; }
-        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; margin-bottom: 10px; }
+        .error { color: red; font-size: 0.9em; margin-top: 5px; }
+        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; margin-bottom: 15px; border-radius: 4px; }
         .hidden { display: none; }
 
         /* Modal minimal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background: white; margin: 10% auto; padding: 15px; border: 1px solid #888; width: 80%; max-width: 600px; }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 5px; }
         .modal-header, .modal-footer { padding: 10px 0; }
-        .modal-header { border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
-        .modal-footer { border-top: 1px solid #ddd; text-align: right; }
+        .modal-header { border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .modal-footer { border-top: 1px solid #ddd; text-align: right; margin-top: 15px; }
         .close { color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; }
 
         /* Styles pour les disponibilités */
-        .day-row { display: flex; align-items: center; border: 1px solid #ddd; margin-bottom: 5px; padding: 5px; }
-        .day-label { width: 40px; }
-        .slots { flex-grow: 1; display: flex; flex-wrap: wrap; }
-        .time-input { width: 100px; }
-        .time-separator { margin: 0 5px; }
-        .add-slot-btn, .remove-slot-btn { background: none; border: none; cursor: pointer; }
-        .add-slot-btn { color: green; font-size: 18px; }
-        .remove-slot-btn { color: red; font-size: 16px; }
-        .slot-container { display: flex; align-items: center; margin-bottom: 5px; }
+        #availability-container { margin-top: 15px; }
+        .day-row {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .day-toggle {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .day-toggle input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+            cursor: pointer;
+        }
+        .day-toggle label {
+            margin: 0;
+            display: inline;
+            cursor: pointer;
+        }
+        .time-slots {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .time-slot {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .time-input {
+            width: 120px;
+            margin-right: 10px;
+        }
+        .time-slot span {
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        .add-slot-btn, .remove-slot-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: auto;
+            padding: 0 10px;
+        }
+        .add-slot-btn { color: #4CAF50; }
+        .remove-slot-btn { color: #f44336; }
     </style>
 </head>
 <body>
@@ -76,37 +120,131 @@
         </div>
 
         <div class="form-group">
-            <label for="day_of_week">Jour de la semaine</label>
-            <select name="day_of_week" id="day_of_week" required>
-                <option value="">Sélectionnez un jour</option>
-                <option value="monday">Lundi</option>
-                <option value="tuesday">Mardi</option>
-                <option value="wednesday">Mercredi</option>
-                <option value="thursday">Jeudi</option>
-                <option value="friday">Vendredi</option>
-                <option value="saturday">Samedi</option>
-                <option value="sunday">Dimanche</option>
-            </select>
-            @error('day_of_week')
+            <label>Sélectionnez vos jours et horaires disponibles</label>
+
+            <div id="availability-container">
+                <!-- Dimanche -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_sunday" name="days[]" value="sunday">
+                        <label for="day_sunday">Dimanche</label>
+                    </div>
+                    <div class="time-slots" id="sunday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="sunday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="sunday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lundi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_monday" name="days[]" value="monday">
+                        <label for="day_monday">Lundi</label>
+                    </div>
+                    <div class="time-slots" id="monday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="monday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="monday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mardi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_tuesday" name="days[]" value="tuesday">
+                        <label for="day_tuesday">Mardi</label>
+                    </div>
+                    <div class="time-slots" id="tuesday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="tuesday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="tuesday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mercredi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_wednesday" name="days[]" value="wednesday">
+                        <label for="day_wednesday">Mercredi</label>
+                    </div>
+                    <div class="time-slots" id="wednesday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="wednesday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="wednesday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jeudi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_thursday" name="days[]" value="thursday">
+                        <label for="day_thursday">Jeudi</label>
+                    </div>
+                    <div class="time-slots" id="thursday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="thursday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="thursday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendredi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_friday" name="days[]" value="friday">
+                        <label for="day_friday">Vendredi</label>
+                    </div>
+                    <div class="time-slots" id="friday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="friday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="friday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Samedi -->
+                <div class="day-row">
+                    <div class="day-toggle">
+                        <input type="checkbox" id="day_saturday" name="days[]" value="saturday">
+                        <label for="day_saturday">Samedi</label>
+                    </div>
+                    <div class="time-slots" id="saturday_slots" style="display: none;">
+                        <div class="time-slot">
+                            <input type="time" name="saturday_start[]" value="09:00" class="time-input">
+                            <span>-</span>
+                            <input type="time" name="saturday_end[]" value="17:00" class="time-input">
+                            <button type="button" class="add-slot-btn" title="Ajouter un créneau">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @error('days')
                 <div class="error">{{ $message }}</div>
             @enderror
-        </div>
-
-        <div class="row">
-            <div class="col">
-                <label for="start_time">Heure de début</label>
-                <input type="time" name="start_time" id="start_time" required>
-                @error('start_time')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col">
-                <label for="end_time">Heure de fin</label>
-                <input type="time" name="end_time" id="end_time" required>
-                @error('end_time')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
+            @error('*_start')
+                <div class="error">Veuillez spécifier une heure de début valide pour chaque créneau</div>
+            @enderror
+            @error('*_end')
+                <div class="error">Veuillez spécifier une heure de fin valide pour chaque créneau</div>
+            @enderror
         </div>
 
 
@@ -135,6 +273,113 @@
     </form>
 </div>
 <script>
+// Script pour gérer l'interface de sélection des disponibilités
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des toggles de jours
+    const dayToggles = document.querySelectorAll('.day-toggle');
+    dayToggles.forEach(toggle => {
+        const checkbox = toggle.querySelector('input[type="checkbox"]');
+        const dayValue = checkbox.value;
+        const timeSlots = document.getElementById(dayValue + '_slots');
+
+        // Gestion du clic sur le toggle complet (pas seulement la checkbox)
+        toggle.addEventListener('click', function(e) {
+            // Éviter de déclencher deux fois si on clique directement sur la checkbox
+            if (e.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+                toggleTimeSlots();
+            }
+        });
+
+        // Gestion du changement de la checkbox
+        checkbox.addEventListener('change', toggleTimeSlots);
+
+        function toggleTimeSlots() {
+            if (checkbox.checked) {
+                timeSlots.style.display = 'block';
+            } else {
+                timeSlots.style.display = 'none';
+            }
+        }
+    });
+
+    // Gestion des boutons d'ajout de créneaux
+    const addSlotButtons = document.querySelectorAll('.add-slot-btn');
+    addSlotButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const timeSlot = this.closest('.time-slot');
+            const timeSlots = this.closest('.time-slots');
+            const dayValue = timeSlots.id.replace('_slots', '');
+
+            // Créer un nouveau créneau
+            const newSlot = document.createElement('div');
+            newSlot.className = 'time-slot';
+
+            // Récupérer les valeurs du créneau précédent
+            const prevStartTime = timeSlot.querySelector(`input[name="${dayValue}_start[]"]`).value;
+            const prevEndTime = timeSlot.querySelector(`input[name="${dayValue}_end[]"]`).value;
+
+            newSlot.innerHTML = `
+                <input type="time" name="${dayValue}_start[]" value="${prevStartTime}" class="time-input">
+                <span>-</span>
+                <input type="time" name="${dayValue}_end[]" value="${prevEndTime}" class="time-input">
+                <button type="button" class="remove-slot-btn" title="Supprimer ce créneau">&times;</button>
+            `;
+
+            // Ajouter le nouveau créneau
+            timeSlots.appendChild(newSlot);
+
+            // Ajouter l'événement de suppression au nouveau bouton
+            const removeButton = newSlot.querySelector('.remove-slot-btn');
+            removeButton.addEventListener('click', function() {
+                newSlot.remove();
+            });
+        });
+    });
+
+    // Validation du formulaire
+    const form = document.getElementById('availabilityForm');
+    form.addEventListener('submit', function(e) {
+        let isValid = false;
+
+        // Vérifier qu'au moins un jour est sélectionné
+        const selectedDays = document.querySelectorAll('input[name="days[]"]:checked');
+        if (selectedDays.length === 0) {
+            alert('Veuillez sélectionner au moins un jour de disponibilité.');
+            e.preventDefault();
+            return;
+        }
+
+        // Vérifier que chaque jour sélectionné a au moins un créneau valide
+        selectedDays.forEach(dayCheckbox => {
+            const dayValue = dayCheckbox.value;
+            const startTimes = document.querySelectorAll(`input[name="${dayValue}_start[]"]`);
+            const endTimes = document.querySelectorAll(`input[name="${dayValue}_end[]"]`);
+
+            for (let i = 0; i < startTimes.length; i++) {
+                if (startTimes[i].value && endTimes[i].value) {
+                    // Vérifier que l'heure de fin est après l'heure de début
+                    if (startTimes[i].value >= endTimes[i].value) {
+                        alert(`Pour ${dayValue}, l'heure de fin doit être après l'heure de début.`);
+                        e.preventDefault();
+                        return;
+                    }
+                    isValid = true;
+                } else {
+                    alert(`Veuillez spécifier une heure de début et de fin pour ${dayValue}.`);
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+
+        if (!isValid) {
+            alert('Veuillez ajouter au moins un créneau horaire valide.');
+            e.preventDefault();
+        }
+    });
+});
+
 // Script pour le modal d'aide sur les fuseaux horaires
 </script>
 

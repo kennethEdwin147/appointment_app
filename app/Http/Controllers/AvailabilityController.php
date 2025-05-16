@@ -23,7 +23,7 @@ class AvailabilityController extends Controller
         $creator = auth()->user()->creator;
         $creatorTimezone = $creator->timezone;
 
-        $availabilities = Availability::with('eventType')
+        $availabilities = Availability::with('eventTypes')
             ->where('creator_id', auth()->id())
             ->orderBy('day_of_week')
             ->orderBy('start_time')
@@ -82,44 +82,93 @@ class AvailabilityController extends Controller
 
         $request->validate([
             'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->id(),
-            'day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'days' => 'required|array',
+            'days.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'effective_from' => 'nullable|date',
-            'effective_until' => 'nullable|date|after:effective_from',
-            'price' => 'nullable|numeric|min:0',
-            'max_participants' => 'nullable|integer|min:1',
-            'meeting_link' => 'nullable|url',
+            'effective_until' => 'nullable|date|after_or_equal:effective_from',
         ]);
 
-        // Valider et traiter les données de fuseau horaire
-        $timezoneData = $this->validateAndProcessTimezoneData($request);
+        // Récupérer le fuseau horaire du créateur
+        $creator = auth()->user()->creator;
+        $creatorTimezone = $creator->timezone;
 
-        // Si une redirection a été retournée (en cas d'erreur), la retourner
-        if (!is_array($timezoneData)) {
-            return $timezoneData;
+        // Vérifier les changements d'heure pendant la période de validité
+        $dstWarnings = [];
+        $effectiveFrom = $request->effective_from;
+        $effectiveUntil = $request->effective_until;
+
+        if ($effectiveFrom) {
+            $dstTransition = $this->getDSTTransitionForDate($effectiveFrom, $creatorTimezone);
+            if ($dstTransition) {
+                $dstWarnings[] = "Attention: Un changement d'heure a lieu le {$effectiveFrom}: {$dstTransition['description']}";
+            }
         }
 
-        // Extraire les données traitées
-        $startTimeUTC = $timezoneData['startTimeUTC'];
-        $endTimeUTC = $timezoneData['endTimeUTC'];
+        if ($effectiveUntil) {
+            $dstTransition = $this->getDSTTransitionForDate($effectiveUntil, $creatorTimezone);
+            if ($dstTransition) {
+                $dstWarnings[] = "Attention: Un changement d'heure a lieu le {$effectiveUntil}: {$dstTransition['description']}";
+            }
+        }
 
-        $availability = Availability::create([
-            'event_type_id' => $request->event_type_id,
-            'creator_id' => auth()->id(),
-            'day_of_week' => $request->day_of_week,
-            'start_time' => $startTimeUTC,
-            'end_time' => $endTimeUTC,
-            'effective_from' => $request->effective_from,
-            'effective_until' => $request->effective_until,
-            'is_active' => true,
-            'price' => $request->price,
-            'max_participants' => $request->max_participants,
-            'meeting_link' => $request->meeting_link,
-        ]);
+        // Stocker les avertissements dans la session
+        if (!empty($dstWarnings)) {
+            session()->flash('dst_warnings', $dstWarnings);
+        }
+
+        // Traiter chaque jour sélectionné
+        $availabilitiesCreated = 0;
+        $selectedDays = $request->days;
+
+        foreach ($selectedDays as $day) {
+            // Récupérer les créneaux horaires pour ce jour
+            $startTimes = $request->input("{$day}_start", []);
+            $endTimes = $request->input("{$day}_end", []);
+
+            // Créer une disponibilité pour chaque créneau horaire
+            for ($i = 0; $i < count($startTimes); $i++) {
+                // Valider le créneau horaire
+                if (empty($startTimes[$i]) || empty($endTimes[$i])) {
+                    continue; // Ignorer les créneaux incomplets
+                }
+
+                // Vérifier que l'heure de fin est après l'heure de début
+                if ($startTimes[$i] >= $endTimes[$i]) {
+                    return back()->withErrors([
+                        "{$day}_time" => "Pour {$day}, l'heure de fin doit être après l'heure de début."
+                    ])->withInput();
+                }
+
+                // Convertir les heures du fuseau horaire du créateur vers UTC pour le stockage
+                $startTimeUTC = $this->convertToUTC($startTimes[$i], $creatorTimezone, $effectiveFrom);
+                $endTimeUTC = $this->convertToUTC($endTimes[$i], $creatorTimezone, $effectiveFrom);
+
+                // Créer la disponibilité
+                $availability = Availability::create([
+                    'creator_id' => auth()->id(),
+                    'day_of_week' => $day,
+                    'start_time' => $startTimeUTC,
+                    'end_time' => $endTimeUTC,
+                    'effective_from' => $request->effective_from,
+                    'effective_until' => $request->effective_until,
+                    'is_active' => true,
+                ]);
+
+                // Associer la disponibilité au type d'événement
+                $availability->eventTypes()->attach($request->event_type_id);
+
+                $availabilitiesCreated++;
+            }
+        }
+
+        if ($availabilitiesCreated === 0) {
+            return back()->withErrors([
+                'general' => 'Aucune disponibilité n\'a été créée. Veuillez sélectionner au moins un jour et spécifier des créneaux horaires valides.'
+            ])->withInput();
+        }
 
         return redirect()->route('availability.index')
-            ->with('success', 'Disponibilité créée avec succès.');
+            ->with('success', $availabilitiesCreated . ' disponibilité(s) créée(s) avec succès.');
     }
 
     /**
@@ -165,12 +214,21 @@ class AvailabilityController extends Controller
         $startTimeUTC = $timezoneData['startTimeUTC'];
         $endTimeUTC = $timezoneData['endTimeUTC'];
 
-        // Mettre à jour les données validées avec les heures converties
-        $validatedData = $request->validated();
-        $validatedData['start_time'] = $startTimeUTC;
-        $validatedData['end_time'] = $endTimeUTC;
+        // Mettre à jour la disponibilité
+        $availability->update([
+            'day_of_week' => $request->day_of_week,
+            'start_time' => $startTimeUTC,
+            'end_time' => $endTimeUTC,
+            'effective_from' => $request->effective_from,
+            'effective_until' => $request->effective_until,
+            'is_active' => $request->boolean('is_active'),
+            'price' => $request->price,
+            'max_participants' => $request->max_participants,
+            'meeting_link' => $request->meeting_link,
+        ]);
 
-        $availability->update($validatedData);
+        // Mettre à jour les types d'événements associés
+        $availability->eventTypes()->sync([$request->event_type_id]);
 
         return redirect()->route('availability.index')
             ->with('success', 'Disponibilité mise à jour avec succès.');
