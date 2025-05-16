@@ -109,22 +109,7 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <label for="price">Prix (€) (optionnel)</label>
-                <input type="number" name="price" id="price" step="0.01" min="0">
-                @error('price')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-            <div class="col">
-                <label for="max_participants">Max participants (optionnel)</label>
-                <input type="number" name="max_participants" id="max_participants" min="1">
-                @error('max_participants')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-        </div>
+
         <div class="row">
             <div class="col">
                 <label for="effective_from">Date de début</label>
@@ -141,13 +126,7 @@
                 @enderror
             </div>
         </div>
-        <div class="form-group">
-            <label for="meeting_link">Lien de la réunion (optionnel)</label>
-            <input type="url" name="meeting_link" id="meeting_link">
-            @error('meeting_link')
-                <div class="error">{{ $message }}</div>
-            @enderror
-        </div>
+
         <div class="checkbox">
             <input type="checkbox" value="1" id="is_active" name="is_active" checked>
             <label for="is_active">Disponibilité active</label>
