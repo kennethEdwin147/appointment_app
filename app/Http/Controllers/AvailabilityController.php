@@ -81,7 +81,7 @@ class AvailabilityController extends Controller
         $this->authorize('create', Availability::class);
 
         $request->validate([
-            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->id(),
+            'schedule_id' => 'required|exists:schedules,id,creator_id,' . auth()->id(),
             'days' => 'required|array',
             'days.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'effective_from' => 'nullable|date',
@@ -145,7 +145,7 @@ class AvailabilityController extends Controller
 
                 // Créer la disponibilité
                 $availability = Availability::create([
-                    'creator_id' => auth()->id(),
+                    'schedule_id' => $request->schedule_id,
                     'day_of_week' => $day,
                     'start_time' => $startTimeUTC,
                     'end_time' => $endTimeUTC,
@@ -153,9 +153,6 @@ class AvailabilityController extends Controller
                     'effective_until' => $request->effective_until,
                     'is_active' => true,
                 ]);
-
-                // Associer la disponibilité au type d'événement
-                $availability->eventTypes()->attach($request->event_type_id);
 
                 $availabilitiesCreated++;
             }
@@ -190,16 +187,13 @@ class AvailabilityController extends Controller
         $this->authorize('update', $availability);
 
         $request->validate([
-            'event_type_id' => 'required|exists:event_types,id,creator_id,' . auth()->id(),
+            'schedule_id' => 'required|exists:schedules,id,creator_id,' . auth()->id(),
             'day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'effective_from' => 'nullable|date',
             'effective_until' => 'nullable|date|after:effective_from',
             'is_active' => 'boolean',
-            'price' => 'nullable|numeric|min:0',
-            'max_participants' => 'nullable|integer|min:1',
-            'meeting_link' => 'nullable|url',
         ]);
 
         // Valider et traiter les données de fuseau horaire
@@ -216,19 +210,14 @@ class AvailabilityController extends Controller
 
         // Mettre à jour la disponibilité
         $availability->update([
+            'schedule_id' => $request->schedule_id,
             'day_of_week' => $request->day_of_week,
             'start_time' => $startTimeUTC,
             'end_time' => $endTimeUTC,
             'effective_from' => $request->effective_from,
             'effective_until' => $request->effective_until,
             'is_active' => $request->boolean('is_active'),
-            'price' => $request->price,
-            'max_participants' => $request->max_participants,
-            'meeting_link' => $request->meeting_link,
         ]);
-
-        // Mettre à jour les types d'événements associés
-        $availability->eventTypes()->sync([$request->event_type_id]);
 
         return redirect()->route('availability.index')
             ->with('success', 'Disponibilité mise à jour avec succès.');

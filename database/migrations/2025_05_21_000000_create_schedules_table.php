@@ -9,10 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Cette migration crée une nouvelle structure pour gérer les horaires et les disponibilités :
-     * 1. Une table 'schedules' (horaires) qui appartient à un créateur
-     * 2. Modification de la table 'event_types' pour qu'elle référence un horaire (relation one-to-many)
-     * 3. Modification de la table 'availabilities' pour qu'elle référence un horaire au lieu d'un créateur
+     * Cette migration crée la table 'schedules' (horaires) qui appartient à un créateur
      */
     public function up(): void
     {
@@ -31,54 +28,6 @@ return new class extends Migration
             // Un créateur ne peut pas avoir deux horaires avec le même nom
             $table->unique(['creator_id', 'name']);
         });
-
-        // Modification de la table des types d'événements pour référencer un horaire
-        // Un type d'événement est associé à un seul horaire (relation one-to-many)
-        Schema::table('event_types', function (Blueprint $table) {
-            // Ajout de la référence à l'horaire (nullable car les types d'événements existants n'ont pas d'horaire)
-            $table->foreignId('schedule_id')->nullable()->after('creator_id')->constrained()->onDelete('set null');
-        });
-
-        // Modification de la table des disponibilités pour référencer les horaires
-        Schema::table('availabilities', function (Blueprint $table) {
-            // Suppression de la colonne creator_id si elle existe (car maintenant liée via schedule)
-            if (Schema::hasColumn('availabilities', 'creator_id')) {
-                $table->dropForeign(['creator_id']);
-                $table->dropColumn('creator_id');
-            }
-
-            // Suppression de la colonne event_type_id si elle existe
-            if (Schema::hasColumn('availabilities', 'event_type_id')) {
-                $table->dropForeign(['event_type_id']);
-                $table->dropColumn('event_type_id');
-            }
-
-            // Ajout de la référence à l'horaire
-            $table->foreignId('schedule_id')->after('id')->constrained()->onDelete('cascade');
-
-            // Suppression de l'ancienne contrainte d'unicité si elle existe
-            if (Schema::hasTable('availabilities')) {
-                $doctrineTable = Schema::getConnection()->getDoctrineSchemaManager()->listTableDetails('availabilities');
-
-                if ($doctrineTable->hasIndex('unique_availability_slot')) {
-                    $table->dropUnique('unique_availability_slot');
-                } else if ($doctrineTable->hasIndex('unique_availability_slot_new')) {
-                    $table->dropUnique('unique_availability_slot_new');
-                }
-            }
-
-            // Nouvelle contrainte d'unicité
-            $table->unique(
-                ['schedule_id', 'day_of_week', 'start_time', 'effective_from', 'effective_until'],
-                'unique_availability_slot_schedule'
-            );
-        });
-
-        // Suppression de la table pivot availability_event_type si elle existe
-        // (car la relation est maintenant gérée via les horaires)
-        if (Schema::hasTable('availability_event_type')) {
-            Schema::dropIfExists('availability_event_type');
-        }
     }
 
     /**
@@ -86,39 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Suppression de la table pivot availability_event_type si elle existe
-        if (Schema::hasTable('availability_event_type')) {
-            Schema::dropIfExists('availability_event_type');
-        }
-
-        // Restauration de la table des disponibilités
-        Schema::table('availabilities', function (Blueprint $table) {
-            // Suppression de la contrainte d'unicité
-            $table->dropUnique('unique_availability_slot_schedule');
-
-            // Suppression de la référence à l'horaire
-            $table->dropForeign(['schedule_id']);
-            $table->dropColumn('schedule_id');
-
-            // Restauration de la référence au créateur
-            $table->foreignId('creator_id')->after('id')->constrained('users')->onDelete('cascade');
-
-            // Restauration de la colonne event_type_id
-            $table->foreignId('event_type_id')->nullable()->after('creator_id')->constrained()->onDelete('cascade');
-
-            // Restauration de l'ancienne contrainte d'unicité
-            $table->unique(
-                ['creator_id', 'day_of_week', 'start_time', 'effective_from', 'effective_until'],
-                'unique_availability_slot'
-            );
-        });
-
-        // Suppression de la référence à l'horaire dans la table des types d'événements
-        Schema::table('event_types', function (Blueprint $table) {
-            $table->dropForeign(['schedule_id']);
-            $table->dropColumn('schedule_id');
-        });
-
         // Suppression de la table des horaires
         Schema::dropIfExists('schedules');
     }

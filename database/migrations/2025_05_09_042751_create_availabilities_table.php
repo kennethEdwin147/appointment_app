@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('availabilities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('event_type_id')->constrained()->onDelete('cascade');
+            $table->foreignId('schedule_id')->constrained()->onDelete('cascade')->comment('Horaire auquel appartient cette disponibilité');
             $table->enum('day_of_week', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
             $table->time('start_time');
             $table->time('end_time');
@@ -22,11 +21,11 @@ return new class extends Migration
             $table->date('effective_until')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
-            // Un créateur ne peut pas avoir le même créneau horaire pour le même type d'événement
+
+            // Un horaire ne peut pas avoir le même créneau horaire
             $table->unique(
-                ['creator_id', 'event_type_id', 'day_of_week', 'start_time', 'effective_from', 'effective_until'],
-                'unique_availability_slot'
+                ['schedule_id', 'day_of_week', 'start_time', 'effective_from', 'effective_until'],
+                'unique_availability_slot_schedule'
             );
         });
     }

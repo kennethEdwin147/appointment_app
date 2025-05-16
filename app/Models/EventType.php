@@ -70,7 +70,12 @@ class EventType extends Model
     {
         // Si un horaire est associé, retourner ses disponibilités actives
         if ($this->schedule_id) {
-            return $this->schedule->activeAvailabilities();
+            return $this->schedule->availabilities()
+                ->where('is_active', true)
+                ->where(function ($query) {
+                    $query->whereNull('effective_until')
+                          ->orWhere('effective_until', '>=', now());
+                });
         }
 
         // Sinon, retourner une collection vide

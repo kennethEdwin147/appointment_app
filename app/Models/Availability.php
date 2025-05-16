@@ -10,11 +10,6 @@ class Availability extends Model
 {
     use HasFactory;
 
-    /**
-     * Les attributs qui sont assignables en masse.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'schedule_id',
         'day_of_week',
@@ -25,17 +20,14 @@ class Availability extends Model
         'is_active',
     ];
 
-    /**
-     * Les attributs qui doivent être convertis.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
         'effective_from' => 'date:Y-m-d',
         'effective_until' => 'date:Y-m-d',
         'is_active' => 'boolean',
+        'price' => 'float',
+        'max_participants' => 'integer',
     ];
 
     /**
@@ -51,16 +43,28 @@ class Availability extends Model
     /**
      * Obtient le créateur via l'horaire.
      *
-     * @return BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
      */
     public function creator()
     {
-        return $this->schedule->creator();
+        return $this->hasOneThrough(
+            User::class,
+            Schedule::class,
+            'id', // Clé étrangère sur la table schedules
+            'id', // Clé primaire sur la table users
+            'schedule_id', // Clé locale sur la table availabilities
+            'creator_id' // Clé locale sur la table schedules
+        );
     }
 
+    /**
+     * Obtient les types d'événements associés via l'horaire.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
     public function eventTypes()
     {
-        return $this->belongsToMany(EventType::class, 'availability_event_type');
+        return $this->schedule->eventTypes();
     }
 
     public function getDurationAttribute()

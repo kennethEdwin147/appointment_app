@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('meeting_link')->nullable()->comment('Lien de réunion personnalisé');
             $table->boolean('is_active')->default(true);
             $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('schedule_id')->nullable()->constrained()->onDelete('set null')->comment('Horaire associé à ce type d\'événement');
             $table->timestamps();
             $table->unique(['name', 'creator_id']);
         });
