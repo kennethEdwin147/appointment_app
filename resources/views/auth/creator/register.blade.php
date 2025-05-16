@@ -4,6 +4,7 @@
     <title>{{ config('app.name', 'Laravel') }} - Devenir Créateur</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
     <link rel="stylesheet" href="{{ asset('register_theme/css/bootstrap.min.css') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}">
@@ -94,7 +95,7 @@
                                     <button class="btn btn-lg py-4 mb-6 btn-primary w-100" type="submit">{{ __('C\'est parti !') }}</button>
                                     <p class="d-flex align-items-center text-muted fs-9 fw-medium mb-0">
                                         <span class="me-1">Tu as dejà un compte ?</span>
-                                        <a class="btn text-muted border-0 p-0" href="{{ route("login") }}">{{ __('Connectes toi') }}</a>
+                                        <a class="btn text-muted border-0 p-0" href="{{ route('login') }}">{{ __('Connectes toi') }}</a>
                                     </p>
                                 </form>
                             </div>
@@ -106,5 +107,31 @@
     </div>
     <script src="{{ asset('register_theme/js/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/timezone-helper.js') }}"></script>
+    <script>
+        // Configuration du token CSRF pour les requêtes AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer le token CSRF depuis la balise meta
+            let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // Ajouter le token à toutes les requêtes AJAX
+            let headers = new Headers();
+            headers.append('X-CSRF-TOKEN', token);
+
+            // S'assurer que le formulaire a bien un token CSRF
+            let form = document.querySelector('form');
+            if (form) {
+                // Vérifier si le formulaire a déjà un champ CSRF
+                let csrfField = form.querySelector('input[name="_token"]');
+                if (!csrfField) {
+                    // Ajouter le champ CSRF si nécessaire
+                    let input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = '_token';
+                    input.value = token;
+                    form.appendChild(input);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
