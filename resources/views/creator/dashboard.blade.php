@@ -53,10 +53,11 @@
                                         <h5 class="font-medium text-white mb-4">{{ __('Actions rapides') }}</h5>
                                         <ul class="list-disc pl-5 text-gray-300">
                                             <li><a href="{{ route('creator.profile.edit') }}" class="text-purple-400 hover:text-purple-300">{{ __('Modifier votre profil') }}</a></li>
+                                            <li><a href="{{ route('schedule.index') }}" class="text-purple-400 hover:text-purple-300">{{ __('Gérer vos horaires') }}</a></li>
                                             <li><a href="{{ route('availability.index') }}" class="text-purple-400 hover:text-purple-300">{{ __('Gérer vos disponibilités') }}</a></li>
                                             <li><a href="#" class="text-purple-400 hover:text-purple-300">{{ __('Consulter vos réservations') }}</a></li>
                                             <li><a href="{{ route('event_type.create') }}" class="text-purple-400 hover:text-purple-300">{{ __('Créer un type d\'événement') }}</a></li>
-                                           
+
                                         </ul>
                                     </div>
                                 </div>

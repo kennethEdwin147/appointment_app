@@ -19,6 +19,7 @@ class EventType extends Model
         'meeting_link',
         'is_active',
         'creator_id',
+        'schedule_id',
     ];
 
     protected $casts = [
@@ -35,64 +36,45 @@ class EventType extends Model
     }
 
     /**
-     * Obtient les horaires associés à ce type d'événement.
+     * Obtient l'horaire associé à ce type d'événement.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function schedules()
+    public function schedule()
     {
-        return $this->belongsToMany(Schedule::class, 'event_type_schedule')
-                    ->withTimestamps();
+        return $this->belongsTo(Schedule::class);
     }
 
     /**
-     * Obtient les horaires actifs associés à ce type d'événement.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function activeSchedules()
-    {
-        return $this->belongsToMany(Schedule::class, 'event_type_schedule')
-                    ->where('schedules.is_active', true)
-                    ->where(function ($query) {
-                        $query->whereNull('schedules.effective_until')
-                              ->orWhere('schedules.effective_until', '>=', now());
-                    })
-                    ->withTimestamps();
-    }
-
-    /**
-     * Obtient toutes les disponibilités associées à ce type d'événement via les horaires.
+     * Obtient les disponibilités via l'horaire associé.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
     public function availabilities()
     {
-        // Nous devons utiliser une requête personnalisée car HasManyThrough ne fonctionne pas avec BelongsToMany
-        return Availability::whereHas('schedule', function ($query) {
-            $query->whereHas('eventTypes', function ($q) {
-                $q->where('event_types.id', $this->id);
-            });
-        });
+        // Si un horaire est associé, retourner ses disponibilités
+        if ($this->schedule_id) {
+            return $this->schedule->availabilities();
+        }
+
+        // Sinon, retourner une collection vide
+        return Availability::where('id', 0);
     }
 
     /**
-     * Obtient toutes les disponibilités actives associées à ce type d'événement via les horaires.
+     * Obtient les disponibilités actives via l'horaire associé.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
     public function activeAvailabilities()
     {
-        return Availability::whereHas('schedule', function ($query) {
-            $query->whereHas('eventTypes', function ($q) {
-                $q->where('event_types.id', $this->id);
-            });
-        })
-        ->where('availabilities.is_active', true)
-        ->where(function ($query) {
-            $query->whereNull('availabilities.effective_until')
-                  ->orWhere('availabilities.effective_until', '>=', now());
-        });
+        // Si un horaire est associé, retourner ses disponibilités actives
+        if ($this->schedule_id) {
+            return $this->schedule->activeAvailabilities();
+        }
+
+        // Sinon, retourner une collection vide
+        return Availability::where('id', 0);
     }
 
     public function reservations()

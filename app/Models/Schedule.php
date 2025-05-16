@@ -39,7 +39,7 @@ class Schedule extends Model
 
     /**
      * Obtient le créateur auquel appartient cet horaire.
-     * 
+     *
      * @return BelongsTo
      */
     public function creator(): BelongsTo
@@ -49,7 +49,7 @@ class Schedule extends Model
 
     /**
      * Obtient les disponibilités associées à cet horaire.
-     * 
+     *
      * @return HasMany
      */
     public function availabilities(): HasMany
@@ -59,7 +59,7 @@ class Schedule extends Model
 
     /**
      * Obtient les disponibilités actives associées à cet horaire.
-     * 
+     *
      * @return HasMany
      */
     public function activeAvailabilities(): HasMany
@@ -74,18 +74,17 @@ class Schedule extends Model
 
     /**
      * Obtient les types d'événements associés à cet horaire.
-     * 
-     * @return BelongsToMany
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function eventTypes(): BelongsToMany
+    public function eventTypes()
     {
-        return $this->belongsToMany(EventType::class, 'event_type_schedule')
-            ->withTimestamps();
+        return $this->hasMany(EventType::class);
     }
 
     /**
      * Vérifie si l'horaire est actuellement valide.
-     * 
+     *
      * @return bool
      */
     public function isCurrentlyValid(): bool
